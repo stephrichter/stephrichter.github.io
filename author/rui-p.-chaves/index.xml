@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rui P. Chaves | Stephanie N. Richter</title>
+    <link>/author/rui-p.-chaves/</link>
+      <atom:link href="/author/rui-p.-chaves/index.xml" rel="self" type="application/rss+xml" />
+    <description>Rui P. Chaves</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Wed, 01 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
+      <title>Rui P. Chaves</title>
+      <link>/author/rui-p.-chaves/</link>
+    </image>
+    
+    <item>
+      <title>Investigating the Role of Verb Frequency in Factive and Manner-of-speaking Islands</title>
+      <link>/publication/richterchaves-2020/</link>
+      <pubDate>Wed, 01 Jul 2020 00:00:00 +0000</pubDate>
+      <guid>/publication/richterchaves-2020/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
