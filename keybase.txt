@@ -1,0 +1,56 @@
+==================================================================
+https://keybase.io/stephrichter
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://stephrichter.github.io
+  * I am stephrichter (https://keybase.io/stephrichter) on keybase.
+  * I have a public key ASC-vmVYP51yvb_Q166VH9Ix9mUyTg4U3eh1CYotmP64UQo
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "0120bebe65583f9d72bdbfd0d7ae951fd231f665324e0e14dde875098a2d98feb8510a",
+      "host": "keybase.io",
+      "kid": "0120bebe65583f9d72bdbfd0d7ae951fd231f665324e0e14dde875098a2d98feb8510a",
+      "uid": "5af0eaa0ebfaf6d5555b6bf2093c8819",
+      "username": "stephrichter"
+    },
+    "merkle_root": {
+      "ctime": 1617150716,
+      "hash": "a53152a89f658fa805e65b4a3a52a02beb19133c0959dd834a337a72de76c3d384deac25b863314e4d614ff7ec38a1c5a7b8de528baffce6af8d3dd1e661d46c",
+      "hash_meta": "af3f8b9cd60fda8d44c89d60a447353ec071e8997f83497997efd8f94a382e49",
+      "seqno": 19510517
+    },
+    "service": {
+      "entropy": "6cGFu3aF7u/I6oEe1gKxe49p",
+      "hostname": "stephrichter.github.io",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 2
+  },
+  "client": {
+    "name": "keybase.io go client",
+    "version": "5.6.0"
+  },
+  "ctime": 1617150741,
+  "expire_in": 504576000,
+  "prev": "044f505258bf45244f6bb603e2a9b109c2f7f3e4fdd78a33df5cb57fecc7bc1c",
+  "seqno": 23,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEgvr5lWD+dcr2/0NeulR/SMfZlMk4OFN3odQmKLZj+uFEKp3BheWxvYWTESpcCF8QgBE9QUli/RSRPa7YD4qmxCcL38+T914oz31y1f+zHvBzEIC0dhFgFsVlSEBdfdo1tomsZiQBz8NzNZArnZEcluggEAgHCo3NpZ8RAfrJiiBzALbzyHBVuqkC4HAmz+eAe42B3KZj4iw1k4xMqJSfCKapY9ZoolOrcAq7V9x68rj3IOXWfJZB5QdP6D6hzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEIBqYQrNOmw2nbA4jQLY/3Eyui7vezkiA8YrBrgh1oD3No3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/stephrichter
+
+==================================================================
