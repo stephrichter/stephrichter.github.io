@@ -5,28 +5,12 @@
     <link>/author/stephanie-n.-richter/</link>
       <atom:link href="/author/stephanie-n.-richter/index.xml" rel="self" type="application/rss+xml" />
     <description>Stephanie N. Richter</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 01 Feb 2021 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language>
     <image>
       <url>/img/static/img/stephanie_richter</url>
       <title>Stephanie N. Richter</title>
       <link>/author/stephanie-n.-richter/</link>
     </image>
-    
-    <item>
-      <title>Look at that! BERT can be easily distracted from paying attention to morphosyntax</title>
-      <link>/publication/chavesrichter2021/</link>
-      <pubDate>Mon, 01 Feb 2021 00:00:00 +0000</pubDate>
-      <guid>/publication/chavesrichter2021/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Investigating the Role of Verb Frequency in Factive and Manner-of-speaking Islands</title>
-      <link>/publication/richterchaves2020/</link>
-      <pubDate>Wed, 01 Jul 2020 00:00:00 +0000</pubDate>
-      <guid>/publication/richterchaves2020/</guid>
-      <description></description>
-    </item>
     
   </channel>
 </rss>
