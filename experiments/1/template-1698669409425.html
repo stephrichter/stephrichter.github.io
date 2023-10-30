@@ -1,0 +1,662 @@
+<script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet" /><!-- colors -->
+<link href="https://s3-us-west-2.amazonaws.com/colors-css/2.2.0/colors.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/bootstrap-slider.js"></script>
+
+
+<style type="text/css">
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #444444;
+    font-size: 12pt;
+    background-color: #FAFAFA;
+  }
+
+  .expl {
+    color: #0000FF;
+  }
+  .sentence {
+    font-weight: bold;
+    font-size: 16pt;
+  }
+  .question {
+    font-style: italic;
+  }
+  .important {
+    font-weight: bold;
+  }
+
+  #submitButton {
+    margin: auto;
+    display: block;
+    width: auto;
+    background-color: #2172a4;
+    color: #fff;
+    font-size: 20pt;
+    padding: .5rem;
+    cursor: pointer;
+    border-radius: .75rem;
+  }
+
+  #submitButton:hover {
+    background-color: #06486F;
+  }
+
+  textarea {
+    font-size: 12px;
+    margin: 0 auto;
+    display: block;
+    resize: none;
+  }
+
+</style>
+
+<!-- javascript -->
+<script type="text/javascript">
+  var debug_mode = true;
+
+  // (e.g., the max edit distance is 20% of the token length.)
+  // We can overwrite the variables in init() after parsing json.
+  var THRESHOLD_min_edit_distance = 1;
+  // var THRESHOLD_max_edit_distance_ratio = 0.5; // = 50% (1.0 = 100%)
+  var instructions_edit_distance_html = "";
+  var num_sentences = "";
+  var json_items = "";
+  var question_naturalness = "How natural is this sentence?";
+  var question_difficulty  = "How difficult is it to figure out what this sentence is intended to mean?";
+
+  function init() {
+    console.log("init");
+
+    if (debug_mode) {
+      console.log("debug mode");
+      json_items = `[{"verb":"object","verbform":"objecting","tense":"past_progressive","frame":"NP V NP","sentence":"Someone was objecting something.","responsenorm":0.6542822719,"responsevar":-1.5435671209,"freq":14,"accbin":3,"freqbin":1,"frameclass":9,"itemid":0,"sentence_tokenized":["Someone","was","objecting","something","."]},{"verb":"prohibit","verbform":"prohibited","tense":"past","frame":"NP V NP VP","sentence":"Someone prohibited someone do something.","responsenorm":0.6976836324,"responsevar":-1.478115288,"freq":67,"accbin":3,"freqbin":2,"frameclass":2,"itemid":1,"sentence_tokenized":["Someone","prohibited","someone","do","something","."]},{"verb":"think","verbform":"thought","tense":"past","frame":"NP V for NP to VP","sentence":"Someone thought for something to happen.","responsenorm":0.867128849,"responsevar":-1.5697784004,"freq":41232,"accbin":3,"freqbin":3,"frameclass":16,"itemid":2,"sentence_tokenized":["Someone","thought","for","something","to","happen","."]},{"verb":"implore","verbform":"implored","tense":"present","frame":"NP be V about NP","sentence":"Someone is implored about something.","responsenorm":0.7997590899,"responsevar":-1.3655890662,"freq":5,"accbin":3,"freqbin":0,"frameclass":19,"itemid":3,"sentence_tokenized":["Someone","is","implored","about","something","."]},{"verb":"discuss","verbform":"discusses","tense":"present","frame":"NP V NP VPing","sentence":"Someone discusses someone doing something.","responsenorm":1.7039293051,"responsevar":-1.8505965525,"freq":10,"accbin":4,"freqbin":1,"frameclass":10,"itemid":4,"sentence_tokenized":["Someone","discusses","someone","doing","something","."]},{"verb":"doubt","verbform":"doubting","tense":"past_progressive","frame":"NP V NP that S","sentence":"Someone was doubting someone that something happened.","responsenorm":1.8332139254,"responsevar":-0.5033522317,"freq":65,"accbin":4,"freqbin":2,"frameclass":7,"itemid":5,"sentence_tokenized":["Someone","was","doubting","someone","that","something","happened","."]},{"verb":"guess","verbform":"guessed","tense":"past","frame":"NP V","sentence":"Someone guessed.","responsenorm":1.6985598803,"responsevar":-1.1431085098,"freq":379,"accbin":4,"freqbin":3,"frameclass":12,"itemid":6,"sentence_tokenized":["Someone","guessed","."]},{"verb":"infer","verbform":"inferred","tense":"past","frame":"NP V NP to NP","sentence":"Someone inferred something to someone.","responsenorm":1.514835,"responsevar":-1.6223611899,"freq":8,"accbin":4,"freqbin":0,"frameclass":13,"itemid":7,"sentence_tokenized":["Someone","inferred","something","to","someone","."]},{"verb":"forbid","verbform":"forbade","tense":"past","frame":"NP V NP to VP[+eventive]","sentence":"Someone forbade someone to do something.","responsenorm":2.7107498646,"responsevar":-1.4159622378,"freq":22,"accbin":5,"freqbin":1,"frameclass":14,"itemid":8,"sentence_tokenized":["Someone","forbade","someone","to","do","something","."]},{"verb":"complain","verbform":"complains","tense":"present","frame":"NP V about NP","sentence":"Someone complains about something.","responsenorm":2.2106442451,"responsevar":-0.3158347035,"freq":81,"accbin":5,"freqbin":2,"frameclass":15,"itemid":9,"sentence_tokenized":["Someone","complains","about","something","."]},{"verb":"remind","verbform":"reminded","tense":"past_progressive","frame":"NP be V S","sentence":"Someone was being reminded something happened.","responsenorm":2.4148614407,"responsevar":-0.3532447348,"freq":423,"accbin":5,"freqbin":3,"frameclass":1,"itemid":10,"sentence_tokenized":["Someone","was","being","reminded","something","happened","."]},{"verb":"recollect","verbform":"recollected","tense":"past","frame":"NP V whether S","sentence":"Someone recollected whether something happened.","responsenorm":2.3196148872,"responsevar":-1.5423047193,"freq":3,"accbin":5,"freqbin":0,"frameclass":0,"itemid":11,"sentence_tokenized":["Someone","recollected","whether","something","happened","."]},{"verb":"propose","verbform":"proposes","tense":"present","frame":"NP V to NP whether S[+future]","sentence":"Someone proposes to someone whether something happen.","responsenorm":0.2071864009,"responsevar":-1.4777032691,"freq":33,"accbin":2,"freqbin":1,"frameclass":22,"itemid":12,"sentence_tokenized":["Someone","proposes","to","someone","whether","something","happen","."]},{"verb":"command","verbform":"commanded","tense":"past","frame":"NP V whichNP S","sentence":"Someone commanded which thing happened.","responsenorm":0.4488448501,"responsevar":-1.5887602354,"freq":85,"accbin":2,"freqbin":2,"frameclass":20,"itemid":13,"sentence_tokenized":["Someone","commanded","which","thing","happened","."]},{"verb":"realize","verbform":"realized","tense":"past","frame":"NP V about whether S","sentence":"Someone realized about whether something happened.","responsenorm":0.4075170159,"responsevar":-1.8114163404,"freq":1834,"accbin":2,"freqbin":3,"frameclass":8,"itemid":14,"sentence_tokenized":["Someone","realized","about","whether","something","happened","."]},{"verb":"prefer","verbform":"preferring","tense":"past_progressive","frame":"NP V so","sentence":"Someone was preferring so.","responsenorm":0.1504923701,"responsevar":-1.8784301284,"freq":9,"accbin":2,"freqbin":0,"frameclass":23,"itemid":15,"sentence_tokenized":["Someone","was","preferring","so","."]},{"verb":"hint","verbform":"hinted","tense":"past","frame":"NP be V","sentence":"Someone was hinted.","responsenorm":-0.3603429198,"responsevar":-1.7426225091,"freq":27,"accbin":1,"freqbin":1,"frameclass":6,"itemid":16,"sentence_tokenized":["Someone","was","hinted","."]},{"verb":"regret","verbform":"regretted","tense":"past","frame":"NP be V to VP[+eventive]","sentence":"Someone was regretted to do something.","responsenorm":-0.6394891143,"responsevar":-1.1325706062,"freq":71,"accbin":1,"freqbin":2,"frameclass":18,"itemid":17,"sentence_tokenized":["Someone","was","regretted","to","do","something","."]},{"verb":"consider","verbform":"considered","tense":"past","frame":"NP V to NP that S[-tense]","sentence":"Someone considered to someone that something happen.","responsenorm":-0.5400506854,"responsevar":-0.7277663924,"freq":1182,"accbin":1,"freqbin":3,"frameclass":3,"itemid":18,"sentence_tokenized":["Someone","considered","to","someone","that","something","happen","."]},{"verb":"notify","verbform":"notifies","tense":"present","frame":"NP V VPing","sentence":"Someone notifies doing something.","responsenorm":-0.4961290359,"responsevar":-1.2981288878,"freq":1,"accbin":1,"freqbin":0,"frameclass":17,"itemid":19,"sentence_tokenized":["Someone","notifies","doing","something","."]},{"verb":"perplex","verbform":"perplexed","tense":"past_progressive","frame":"NP be V so","sentence":"Someone was being perplexed so.","responsenorm":-1.4340653419,"responsevar":-0.6518610644,"freq":17,"accbin":0,"freqbin":1,"frameclass":5,"itemid":20,"sentence_tokenized":["Someone","was","being","perplexed","so","."]},{"verb":"welcome","verbform":"welcomed","tense":"past_progressive","frame":"NP be V that S[+future]","sentence":"Someone was being welcomed that something would happen.","responsenorm":-1.0790618658,"responsevar":-0.5561556112,"freq":104,"accbin":0,"freqbin":2,"frameclass":11,"itemid":21,"sentence_tokenized":["Someone","was","being","welcomed","that","something","would","happen","."]},{"verb":"send","verbform":"sends","tense":"present","frame":"NP V to VP[+eventive]","sentence":"Someone sends to do something.","responsenorm":-1.6859643459,"responsevar":-1.1955487357,"freq":585,"accbin":0,"freqbin":3,"frameclass":4,"itemid":22,"sentence_tokenized":["Someone","sends","to","do","something","."]},{"verb":"hasten","verbform":"hastened","tense":"past","frame":"NP be V that S[-tense]","sentence":"Someone was hastened that something happen.","responsenorm":-1.0181225538,"responsevar":-1.1320589808,"freq":5,"accbin":0,"freqbin":0,"frameclass":21,"itemid":23,"sentence_tokenized":["Someone","was","hastened","that","something","happen","."]}]`;
+      json_items = jQuery.parseJSON(json_items);
+    } else {
+      json_items = `${json}`;
+      json_items = jQuery.parseJSON(json_items);
+    }
+
+    accbins = json_items.map(elem => elem['accbin'])
+                        .filter((value, index, elem) => elem.indexOf(value) === index)
+                        .sort((a, b) => b - a)
+                        .map(idx => json_items.filter(elem => elem['accbin'] === idx)
+                                              .sort((a, b) => a['freq'] - b['freq']));
+
+    json_items = [accbins[0].pop(), accbins[accbins.length-1].pop()];
+
+    accbins.map(bin => shuffle(bin)); // shuffle within bins
+    shuffle(accbins); // shuffle the bins    
+
+    binidx = 0;
+    incomplete = true;
+  
+    while (incomplete){
+      if (accbins[binidx].length > 0) {
+        json_items.push(accbins[binidx].pop());
+      } else {
+        binidx++;
+      }
+      incomplete = accbins.some(elem => elem.length > 0);  
+    }
+
+    //console.log(json_items);
+    num_sentences = json_items.length;
+
+    var questions_html = "";
+
+    for (var i=0; i<num_sentences; i++){
+      var itemid = json_items[i]["itemid"];
+      var sentence = json_items[i]["sentence"];
+      var sentence_length = json_items[i]["sentence_tokenized"].length;
+      // var THRESHOLD_max_edit_distance = Math.ceil(THRESHOLD_max_edit_distance_ratio * sentence_length);
+
+      questions_html += `<p><span class="sentence">` + (i+1).toString() + `. ` + sentence + `</span></p>`;
+      questions_html += `<p><span class="question">` + question_naturalness + `</span></p>`;
+      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="5" />Perfectly natural</label></div>`;
+      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="4" />Fairly natural</label></div>`;
+      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="3" />Somewhat <u>un</u>natural</label></div>`;
+      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="2" />Very <u>un</u>natural</label></div>`;
+      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="1" />Extremely <u>un</u>natural</label></div>`;
+      questions_html += `<p><span class="question">` + question_difficulty + `</span></p>`;
+      questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="5" />Extremely easy</label></div>`;
+      questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="4" />Fairly easy</label></div>`;
+      questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="3" />Somewhat difficult</label></div>`;
+      questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="2" />Very difficult</label></div>`;
+      questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="1" />Extremely difficult</label></div>`;
+      questions_html += `<p><span class="question">Edited sentence:</span></p>`;
+
+      questions_html += `<textarea class="form-control" name="edited_sentence_` + itemid.toString() + `" id="edited_sentence_` + itemid.toString() + `" rows="1" style="font-size:1em;">` + sentence + `</textarea><br />`;
+      questions_html += `<input class="btn btn-info btn-sm" type="button" value="Check your answer" id="valbtn_`+ itemid.toString() + `" onclick="validate_one(` + itemid.toString() +`)" />`;
+      questions_html += `<span id="val-result_` + itemid.toString() + `"></span>`;
+      questions_html += `<hr />`;
+    }
+
+    var questions = document.getElementById("questions");
+    questions.innerHTML = questions_html;
+
+    // instructions html
+    // var instructions_edit_distance_to_embed = document.getElementById("instructions_edit_distance");
+    // instructions_edit_distance_html = "You must add, delete, or alter at least " + THRESHOLD_min_edit_distance + " word(s) and at most " + THRESHOLD_max_edit_distance_ratio * 100 + "% of word(s) of the sentence.";
+    instructions_edit_distance_html = "You must add, delete, or alter at least " + THRESHOLD_min_edit_distance + " word(s)";
+    // instructions_edit_distance_to_embed.innerHTML = instructions_edit_distance_html;
+  }
+
+  function toggle() {
+
+    var ele = document.getElementById("examples");
+    var text = document.getElementById("displaytext");
+
+    if (ele.style.display != "none") {
+      ele.style.display = "none";
+      text.innerHTML = "(show)";
+    } else {
+      ele.style.display = "block";
+      text.innerHTML = "(hide)";
+    }
+  }
+
+  /**
+   * Randomly shuffle an array
+   * https://stackoverflow.com/a/2450976/1293256
+   * @param  {Array} array The array to shuffle
+   * @return {String}      The first item in the shuffled array
+   */
+  function shuffle(array) {
+
+  	          var currentIndex = array.length;
+	          var temporaryValue, randomIndex;
+
+	          // While there remain elements to shuffle...
+	          while (0 !== currentIndex) {
+		    // Pick a remaining element...
+		    randomIndex = Math.floor(Math.random() * currentIndex);
+		    currentIndex -= 1;
+
+		    // And swap it with the current element.
+		    temporaryValue = array[currentIndex];
+		    array[currentIndex] = array[randomIndex];
+		    array[randomIndex] = temporaryValue;
+	          }
+
+	          return array;
+                };
+
+
+  function levenshtein_distance(a, b) {
+    // computing edit distance between two arrays
+    // usage: e.g., var res = levenshtein_distance("This is not a sentence.".split(" "), "This is a sentence.".split(" "));
+    // edit_distance = res[0];
+    // edits = res[1];
+
+    const ins_cost = 1; // insertion cost
+    const del_cost = 1; // deletion cost
+    const sub_cost = 1; // substitution cost
+
+    console.log(a);
+    console.log(b);
+    a.unshift("#");
+    b.unshift("#");
+
+    var distanceMatrix = new Array(b.length).fill().map(() => Array(a.length).fill(0));
+    //console.log(distanceMatrix);
+
+    var edMatrix = new Array(b.length).fill().map(() => Array(a.length).fill(0));
+
+    //initialize Matrices
+    distanceMatrix[0][0] = 0;
+    edMatrix[0][0] = "#";
+
+    for (var i = 1; i < a.length; i++) {
+      distanceMatrix[0][i] = i;
+      edMatrix[0][i] = "I";
+    }
+    for (var j = 1; j < b.length; j++) {
+      distanceMatrix[j][0] = j;
+      edMatrix[j][0] = "D";
+    }
+
+    for (var j = 1; j < a.length; j++) {
+      for (var i = 1; i < b.length; i++) {
+
+        var cost1 = distanceMatrix[i][j-1] + ins_cost;
+        var cost2 = distanceMatrix[i-1][j] + del_cost;
+
+        var cost3 = null;
+        if (a[j] == b[i]) {
+          cost3 = distanceMatrix[i-1][j-1];
+        } else {
+          cost3 = distanceMatrix[i-1][j-1] + sub_cost;
+        }
+
+        if (Math.min(cost1, cost2, cost3) == cost3) {
+          distanceMatrix[i][j] = cost3;
+          edMatrix[i][j] = "R";
+        } else if (Math.min(cost1, cost2, cost3) == cost2) {
+          distanceMatrix[i][j] = cost2;
+          edMatrix[i][j] = "D";
+        } else {
+          distanceMatrix[i][j] = cost1;
+          edMatrix[i][j] = "I";
+        }
+      }
+    }
+    //console.log(distanceMatrix);
+
+    // get edits
+    j = a.length-1;
+    i = b.length-1;
+    var prev_edit = edMatrix[i][j];
+    var edits = [prev_edit];
+    while (prev_edit != "#") {
+      if (prev_edit == "I") {
+        prev_edit = edMatrix[i][j-1];
+        j = j-1 ;
+        edits.unshift("I");
+      } else if (prev_edit == "D") {
+        prev_edit = edMatrix[i-1][j];
+        i = i-1;
+        edits.unshift("D");
+      } else {
+
+        if (distanceMatrix[i][j] == distanceMatrix[i-1][j-1]) {
+          edits.unshift("_");
+        } else {
+          edits.unshift("R");
+        }
+        prev_edit = edMatrix[i-1][j-1];
+        j = j-1;
+        i = i-1;
+      }
+    }
+
+    var ed = parseInt(distanceMatrix[b.length-1][a.length-1]);
+    edits.pop();
+    return [ed, edits]
+  }
+
+  function validation_failed(alert_msg){
+    var warnings = document.getElementById("warnings");
+    alert(alert_msg);
+    warnings.innerHTML = '<span style="color:red;">' + alert_msg + '</span>';
+  }
+
+  function validate_one(idx){
+    console.log("validate_one: " + idx);
+
+    // validate the radio buttons
+    var naturalness_radio = "naturalness_" + idx;
+    if (!($('input[name=' + naturalness_radio + ']:checked').length == 1)) {
+      var alert_msg = " &#10060; You did not answer the question above: " + question_naturalness;
+      var warnings = document.getElementById("val-result_" + idx);
+      warnings.innerHTML = '<span style="font-weight:bold">' + alert_msg + '</span>';
+      return false;
+    }
+
+    var difficulty_radio = "difficulty_" + idx;
+    if (!($('input[name=' + difficulty_radio + ']:checked').length == 1)) {
+      var alert_msg = " &#10060; You did not answer the question above: " + question_difficulty;
+      var warnings = document.getElementById("val-result_" + idx);
+      warnings.innerHTML = '<span style="font-weight:bold">' + alert_msg + '</span>';
+      return false;
+    }
+
+    var input_sentence = json_items[idx]["sentence"];
+    var input_sentence_length = json_items[idx]["sentence_tokenized"].length;
+    // var THRESHOLD_max_edit_distance = Math.ceil(THRESHOLD_max_edit_distance_ratio * input_sentence_length);
+    var edited_sent = document.getElementById("edited_sentence_" + idx).value;
+    var res = levenshtein_distance(edited_sent.split(" "), input_sentence.split(" "));
+    var edit_distance = res[0];
+    console.log("edit distance " + edit_distance);
+
+    // if ((edit_distance < THRESHOLD_min_edit_distance) || (edit_distance > THRESHOLD_max_edit_distance)){
+    if (edit_distance < THRESHOLD_min_edit_distance){
+      if (THRESHOLD_min_edit_distance === 1){
+        var wordsform = "word";
+      } else {
+        var wordsform = "words";
+      }
+      var alert_msg = " &#10060; <b>You still need to edit this sentence; please add, delete, or alter at least " + THRESHOLD_min_edit_distance + " "+ wordsform +".</b>";
+      var warnings = document.getElementById("val-result_" + idx);
+      warnings.innerHTML = '<span>' + alert_msg + '</span>';
+      return false;
+    } else {
+      var alert_msg = " &#9989; <b>Your edits meets the requirement; please move on.</b> ";
+      var warnings = document.getElementById("val-result_" + idx);
+      warnings.innerHTML = '<span>' + alert_msg + '</span>';
+      return true;
+    }
+  }
+
+  function validate() {
+    console.log("validate");
+
+    // validate for each sentence (edit distance).
+    for (var i=0; i<num_sentences; i++){
+      var itemid = json_items[i]["itemid"];
+      var validation_i =  validate_one(itemid.toString());
+      if (!validation_i){
+        var alert_msg = "Your answer for Question #" + (i+1).toString() + ' does not meet the requirement. ' + instructions_edit_distance_html;
+        validation_failed(alert_msg);
+        return false;
+      }
+    }
+    return true;
+  }
+
+window.onload = init;
+</script>
+</head>
+
+<body>
+<noscript>
+  <h1 align="center" style="color:white; background-color: crimson">In this HIT, you must enable JavaScript. <br> This warning appears only when JavaScript is disabled. <br> (Please check https://enablejavascript.co/) <br/></h1>
+</noscript>
+
+
+<form name='mturk_form' method='post' id='mturk_form' action='/mturk/externalSubmit' onsubmit="return validate()">
+  <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+
+  <div class="container">
+    <!-- Title of the HIT -->
+    <h1>What is the intended meaning of these unnatural sentences?</h1>
+
+    <p class="lead">
+  <span class="orange">You may do only one HIT in this
+  batch. Submissions beyond the first will be rejected.</span>
+    </p>
+
+    <h3>Instructions</h3>
+
+    <p>
+      In this task, you will be given English sentences that are unnatural
+      to varying extents. Your task will be to edit each sentence so
+      that the edited version...
+    </p>
+
+    <ol>
+      <li>
+        ...captures <span class="important">what 
+        the writer of the original likely meant</span>.
+      </li>
+      <li>
+        ...is <span class="important">perfectly natural and
+      fluent</span> to a native speaker of standard American English.
+      </li>
+    </ol>
+
+    <p>
+      When editing, you should assume that the person who wrote the
+      original sentence was a native speaker of standard American English who 
+      made a mistake. For instance, maybe they were typing quickly or 
+      were intoxicated. If you think there are multiple things 
+      that the writer might plausibly have meant, <span class="important">choose the 
+      one you think is most likely</span>.
+    </p>
+
+    <p>
+      Your edits should first and foremost capture the intended
+      meaning of the sentence, but they should be 
+      <span class="important">as conservative as possible</span> in achieving that goal. That is, 
+      you should strive to keep the original words, phrases, and structure of the sentence 
+      as much as possible. <span class="important">Under no circumstances 
+      should you split the original sentence into two or more</span>.
+    </p>
+
+    <p>
+      If you have to make a choice between...
+
+    <ol>
+      <li>
+        ...an edit that is very conservative but does <i>not</i> capture the likely intended meaning and...
+      </li>
+      <li>
+        ...an edit that is less conservative but does capture the likely intended meaning...
+      </li>
+    </ol>
+
+      ...you should choose the latter.
+    </p>
+
+    <p>
+      A few of the sentences in this task will already sound perfectly
+      natural. For these sentences, you <span class="important">should still
+      provide an edit</span>. The edited sentence <span class="important">should 
+      mean the same thing</span> as the original sentence and be similarly natural 
+      and fluent.
+    </p>
+
+    <p>
+      Because there is variability in how natural and fluent the sentences
+      are, you will be asked to rate the naturalness of the original
+      sentence from <i>extremely <b>un</b>natural</i>
+      to <i>perfectly natural</i>.
+    </p>
+
+    <p>
+      In addition, because it is sometimes difficult to figure out what an
+      unnatural sentence is intended to mean, you will be asked to rate how hard 
+      it is to figure out what each of the original sentences is intended to mean from <i>extremely
+      difficult</i> to <i>extremely easy</i>. Importantly, this is <b>not</b> the
+      same thing as naturalness: as can be seen from the examples below, a
+      sentence's intended meaning can be relatively easy to figure out even if the sentence is pretty unnatural.
+    </p>
+
+    <h3>Examples <a href="javascript:toggle();" id="displaytext" style="font-size: 80%;">(hide)</a></h3>
+
+    <!-- examples -->
+    <div class="container" id="examples">
+      <table class="table table-condensed">
+        <thead>
+        <tr>
+          <td>Example #1</td>
+          <td>&nbsp;</td>
+          <td>Notes</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td style="width: 100px;"><span class="navy">[original]</span></td>
+          <td>The baby seems sleeping.</td>
+          <td>Somewhat unnatural but easy to interpret.</td>
+        </tr>
+        <tr>
+          <td><span class="blue">[good edits]</span></td>
+          <td>The baby seems <span class="blue">to be</span> sleeping.</td>
+          <td>Conservatively fixes grammatical error while preserving meaning.</td>
+        </tr>
+        <tr>
+          <td><span class="red">[bad edits]</span></td>
+          <td><span class="red">I think</span> the baby <span class="red">is sleepy</span>.</td>
+          <td>Edits are not conservative and the meaning is slightly altered.</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <table class="table table-condensed">
+        <thead>
+        <tr>
+          <td>Example #2</td>
+          <td>&nbsp;</td>
+          <td>Notes</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td style="width: 100px;"><span class="navy">[original]</span></td>
+          <td>The doctor made me taking three kinds of medication.</td>
+          <td>Somewhat unnatural but easy to interpret</td>
+        </tr>
+        <tr>
+          <td><span class="blue">[good edits]</span></td>
+          <td>The doctor made me <span class="blue">take</span> three kinds of medication.</td>
+          <td>Conservatively fixes grammatical error while preserving meaning.</td>
+        </tr>
+        <tr>
+          <td><span class="red">[bad edits]</span></td>
+          <td>The doctor <span class="red">saw</span> me taking three kinds of medication.</td>
+          <td>The edits are conservative and fluent, but they don't preserve the original meaning.</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <table class="table table-condensed">
+        <thead>
+        <tr>
+          <td>Example #3</td>
+          <td>&nbsp;</td>
+          <td>Notes</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td style="width: 100px;"><span class="navy">[original]</span></td>
+          <td>My friend wants that I will bake her a cake.</td>
+          <td>Very unnatural but fairly easy to interpret.</td>
+        </tr>
+        <tr>
+          <td><span class="blue">[good edits]</span></td>
+          <td>My friend wants <span class="blue">me to</span> bake her a cake.</td>
+          <td>Fixes grammatical error involving tense while preserving the meaning.</td>
+        </tr>
+        <tr>
+          <td><span class="red">[bad edits]</span></td>
+          <td>My friend <span class="red">likes</span> that I <span class="red">baked</span> her a cake.</span></td>
+          <td>The edits are conservative and fluent but the meaning is not preserved.</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <table class="table table-condensed">
+        <thead>
+        <tr>
+          <td>Example #4</td>
+          <td>&nbsp;</td>
+          <td>Notes</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td style="width: 100px;"><span class="navy">[original]</span></td>
+          <td>The dog hope owner to give to eat owner dinner.</td>
+          <td>Extremely unnatural but fairly easy to interpret.</td>
+        </tr>
+        <tr>
+          <td><span class="blue">[good edits]</span></td>
+          <td>The dog <span class="blue">hopes its</span> owner <span class="blue">will</span> give <span class="blue">it the</span> owner<span class="blue">'s</span> dinner to eat.</td>
+          <td>Fixes grammatical errors while preserving the likely meaning.</td>
+        </tr>
+        <tr>
+          <td><span class="red">[bad edits]</span></td>
+          <td>The dog <span class="red">hopes its</span> owner <span class="red">will</span> give <span class="red">the dog its</span> dinner <span class="red">to eat</span>.</td>
+          <td>The edits are natural and fluent but the likely meaning is not preserved.</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <table class="table table-condensed">
+        <thead>
+        <tr>
+          <td>Example #5</td>
+          <td>&nbsp;</td>
+          <td>Notes</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td style="width: 100px;"><span class="navy">[original]</span></td>
+          <td>Her boss thinks at her good to work of hers.</td>
+          <td>Extremely unnatural an very difficult to interpret.</td>
+        </tr>
+        <tr>
+          <td><span class="blue">[good edits]</span></td>
+          <td>Her boss thinks <span class="blue">she is</span> good <span class="blue">at her</span> work.</td>
+          <td>Fixes grammatical errors while preserving the likely meaning.</td>
+        </tr>
+        <tr>
+          <td><span class="red">[bad edits]</span></td>
+          <td>Her boss <span class="red">likes that she is</span> good <span class="red">at her</span> work.</td>
+          <td>Not as conservative as possible and meaning has been augmented.</td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+<p>This research is being carried out by Dr. Aaron White at the University of Rochester. You can read more about the study <a href="http://aaronstevenwhite.io/mturk/Information_Sheet_Turk.pdf">here</a>.</p>
+
+<table width=600>
+
+	<tr>
+		<td><b>Age:</b></td><td><textarea class="form-control" name="age" id="age" rows="1" style="font-size:1em;"></textarea></td>
+	</tr>
+
+	<tr>
+		<td><b>Sex:</b></td>
+
+		<td>
+			<input name="sex" type="radio" value="male" class="obligatory" id="csexmale" /><label for="csexmale"> Male</label><br/>
+			<input name="sex" type="radio" value="female" id="csexfemale"/><label for="csexfemale"> Female</label><br/>
+			<input name="sex" type="radio" value="other" id="csexother"/><label for="csexother"> Other</label><br/>
+			<input name="sex" type="radio" value="decline" id="csexdecline"/><label for="csexdecline"> Decline to state</label>
+		</td>
+	</tr>
+
+	<tr>
+		<td><b>Highest level of education:</b></td><td>
+<input name="education" type="radio" value="somehs" class="obligatory" id="cedsomehs" /><label for="cedsomehs"> Some High School </label><br/>
+<input name="education" type="radio" value="hsdegree" class="obligatory" id="cedhsdegree" /><label for="cedhsdegree"> High School Degree </label><br/>
+<input name="education" type="radio" value="associates" class="obligatory" id="cedassociates" /><label for="cedassociates"> Associate's Degree </label><br/>
+<input name="education" type="radio" value="bachelors" class="obligatory" id="cedbachelors" /><label for="cedbachelors"> Bachelor's Degree </label><br/>
+<input name="education" type="radio" value="advanced" class="obligatory" id="cedadvanced" /><label for="cedadvanced"> Advanced Degree </label>
+</select></td>
+	</tr>
+
+	<tr>
+		<td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;">American English</textarea></td>
+	</tr>
+
+	<tr>
+		<td><b>Do you speak any other languages? (please list):</b></td><td><textarea class="form-control" name="otherlanguage" id="otherlanguage" rows="1" style="font-size:1em;">No</textarea></td>
+	</tr>
+
+</table>
+
+    <hr />
+
+    <!-- Questions -->
+    <h3>Questions</h3>
+
+    <div class="panel-body" style="font-size:1em;">
+      <p id="questions"></p>
+    </div>
+    <hr/>
+
+    <p align="center">
+    <div align="center" id="warnings" style="color:red"></div>
+    </p>
+
+    <div>
+      <p>Comments and feedback
+        (Please leave a comment if you have any questions, suggestions, etc.)</p>
+      <span><textarea class="form-control" cols="120" name="feedback" rows="5"></textarea></span>
+      <br/>
+    </div>
+
+    <input type='hidden' value="${hid}" name='hid' id='hid'/>
+
+    <div>
+      <p align="center"><u>By clicking Submit, you agree that you have read the instructions and examples.</u></p>
+      <p align="center">
+        <input type='submit' id='submitButton' value='Submit'/>
+      </p>
+    </div>
+
+  </div>
+
+</form>
+<script language='Javascript'>turkSetAssignmentID();</script>
+
+</body>
