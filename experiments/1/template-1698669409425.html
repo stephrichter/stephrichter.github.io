@@ -1035,7 +1035,7 @@ input[type=range].invisible-handle::-webkit-slider-thumb {
       json_items = jQuery.parseJSON(json_items);
     }
 
-    const content_items = json_items.slice(0, 135) //!!!!!!!!!!!
+    const content_items = json_items.slice(0, 5)//135) //!!!!!!!!!!!
     const catch_trials = json_items.slice(135, 140)
     const shuffleArray = (array) => {
         for (let i = array.length - 1; i > 0; i--) {
@@ -1420,11 +1420,8 @@ window.onload = init;
     <!-- Title of the HIT -->
     <h1 class="important">How natural are these English sentences?</h1>
 
-    <p class="lead">
-  <span class="orange">You may do only one HIT in this
-  batch. Submissions beyond the first will be rejected.</span>
-    </p>
     
+    <div>&nbsp;</div>
 
     <h3>Instructions</h3>
 
@@ -1492,47 +1489,13 @@ window.onload = init;
 
     </div>
 
-<p>This research is being carried out by Stephanie Richter at the University of Rochester.</p>
+<p>This research is being carried out by Dr. Aaron White at the University of Rochester. You can read more about the study <a href="http://aaronstevenwhite.io/mturk/Information_Sheet_Turk.pdf">here</a>.</p>
 
 
 
     <hr />
 
-    <!-- Questions -->
-    <h3>Questions</h3>
-
-    <div class="panel-body" style="font-size:1em;">
-      <p id="questions"></p>
-    </div>
-    <hr/>
-
     <table width=600>
-
-      <tr>
-        <td><b>Sex:</b></td>
-    
-        <td>
-          <input name="sex" type="radio" value="male" class="obligatory" id="csexmale" /> <label for="csexmale"> Male</label><br/>
-          <input name="sex" type="radio" value="female" id="csexfemale"/> <label for="csexfemale"> Female</label><br/>
-          <input name="sex" type="radio" value="other" id="csexother"/> <label for="csexother"> Other</label><br/>
-          <input name="sex" type="radio" value="decline" id="csexdecline"/> <label for="csexdecline"> Decline to state</label>
-        </td>
-      </tr>
-    
-      <tr>
-        <td><b>Age:</b></td><td><textarea class="form-control" name="age" id="age" rows="1" style="font-size:1em;"></textarea></td>
-      </tr>
-      
-      <tr>
-        <td><b>Highest level of education:</b></td><td>
-    <input name="education" type="radio" value="somehs" class="obligatory" id="cedsomehs" /> <label for="cedsomehs"> Some High School </label><br/>
-    <input name="education" type="radio" value="hsdegree" class="obligatory" id="cedhsdegree" /> <label for="cedhsdegree"> High School Degree </label><br/>
-    <input name="education" type="radio" value="associates" class="obligatory" id="cedassociates" /> <label for="cedassociates"> Associate's Degree </label><br/>
-    <input name="education" type="radio" value="bachelors" class="obligatory" id="cedbachelors" /> <label for="cedbachelors"> Bachelor's Degree </label><br/>
-    <input name="education" type="radio" value="advanced" class="obligatory" id="cedadvanced" /> <label for="cedadvanced"> Advanced Degree </label><br/>
-    <input name="education" type="radio" value="decline" class="obligatory" id="ceddecline" /> <label for="ceddecline"> Decline to state </label>
-    </select></td>
-      </tr>
     
       <tr>
         <td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;">American English</textarea></td>
@@ -1543,6 +1506,15 @@ window.onload = init;
       </tr>
     
     </table>
+    <div>&nbsp;</div>
+
+    <!-- Questions -->
+    <h3>Questions</h3>
+
+    <div class="panel-body" style="font-size:1em;">
+      <p id="questions"></p>
+    </div>
+    <hr/>
 
     <p align="center">
     <div align="center" id="warnings" style="color:red"></div>
