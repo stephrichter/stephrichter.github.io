@@ -3,7 +3,15 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet" /><!-- colors -->
 <link href="https://s3-us-west-2.amazonaws.com/colors-css/2.2.0/colors.min.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/bootstrap-slider.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/bootstrap-slider.js"></script> -->
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+<!-- Bootstrap JS and Popper.js (required for Bootstrap) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
 
 
 <style type="text/css">
@@ -26,6 +34,11 @@
   }
   .important {
     font-weight: bold;
+  }
+
+
+  .shifted-text {
+    margin-top: 10px; /* Adjust this value to shift the text up or down */
   }
 
   #submitButton {
@@ -51,7 +64,109 @@
     resize: none;
   }
 
+  /*generated with Input range slider CSS style generator (version 20211225)
+https://toughengineer.github.io/demo/slider-styler*/
+input[type=range].styled-slider {
+  height: auto; 
+  /* 1.2em; */
+  width: 50%;
+  -webkit-appearance: none;
+  margin-top: 0.5em;
+  margin-bottom: -0.25em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+/*webkit*/
+input[type=range].styled-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: calc(max((0.75em - 1px - 1px) * 0.5,0px) - 2em * 0.5);
+}
+
+input[type=range].styled-slider::-webkit-slider-runnable-track {
+  height: 0.75em;
+  border: 1px solid #b2b2b2;
+  border-radius: 0.5em;
+  background: #efefef;
+  box-shadow: none;
+}
+
+/*mozilla*/
+input[type=range].styled-slider::-moz-range-thumb {
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+}
+
+input[type=range].styled-slider::-moz-range-track {
+  height: max(calc(0.75em - 1px - 1px),0px);
+  border: 1px solid #b2b2b2;
+  border-radius: 0.5em;
+  background: #efefef;
+  box-shadow: none;
+}
+
+/*ms*/
+input[type=range].styled-slider::-ms-fill-upper {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].styled-slider::-ms-fill-lower {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].styled-slider::-ms-thumb {
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+input[type=range].styled-slider::-ms-track {
+  height: 0.75em;
+  border-radius: 0.5em;
+  background: #efefef;
+  border: 1px solid #b2b2b2;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+input[type=range].invisible-handle::-webkit-slider-thumb {
+        visibility: hidden;
+        }
+
+        input[type=range].invisible-handle::-moz-range-thumb {
+        visibility: hidden;
+        }
+
+        input[type=range].invisible-handle::-ms-thumb {
+        visibility: hidden;
+        }
+
+
 </style>
+<!-- <script>
+  $('#ex1').slider({
+	formatter: function(value) {
+		return 'Current value: ' + value;
+	}
+});
+</script> -->
 
 <!-- javascript -->
 <script type="text/javascript">
@@ -66,6 +181,7 @@
   var json_items = "";
   var question_naturalness = "How natural is this sentence?";
   var question_difficulty  = "How difficult is it to figure out what this sentence is intended to mean?";
+  var click_listener_record = new Set();
 
   function init() {
     console.log("init");
@@ -919,7 +1035,7 @@
       json_items = jQuery.parseJSON(json_items);
     }
 
-    const content_items = json_items.slice(0, 5)//135) !!!!!!!!!!!
+    const content_items = json_items.slice(0, 135) //!!!!!!!!!!!
     const catch_trials = json_items.slice(135, 140)
     const shuffleArray = (array) => {
         for (let i = array.length - 1; i > 0; i--) {
@@ -965,6 +1081,7 @@
     // Output the selected items
     console.log(sorted_items);
     console.log('selected bins')
+    
 
     // Function to sort items in the desired way
     const customSort = (items) => {
@@ -1049,12 +1166,15 @@
       // var THRESHOLD_max_edit_distance = Math.ceil(THRESHOLD_max_edit_distance_ratio * sentence_length);
 
       questions_html += `<p><span class="sentence">` + (i+1).toString() + `. ` + sentence + `</span></p>`;
-      questions_html += `<p><span class="question">` + question_naturalness + `</span></p>`;
-      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="5" />Perfectly natural</label></div>`;
-      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="4" />Fairly natural</label></div>`;
-      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="3" />Somewhat <u>un</u>natural</label></div>`;
-      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="2" />Very <u>un</u>natural</label></div>`;
-      questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="1" />Extremely <u>un</u>natural</label></div>`;
+      questions_html += `<p><span class="question">` + question_naturalness + `</span>`;
+      questions_html += `<div class="form-control-group"><label>Extremely <u>un</u>natural</label>  <input type="range" min="1" max="100" class="styled-slider invisible-handle" name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `"/> <label>Perfectly natural</label></div>`;
+      
+      
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="5" />Perfectly natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="4" />Fairly natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="3" />Somewhat <u>un</u>natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="2" />Very <u>un</u>natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="1" />Extremely <u>un</u>natural</label></div>`;
       // questions_html += `<p><span class="question">` + question_difficulty + `</span></p>`;
       // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="5" />Extremely easy</label></div>`;
       // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="4" />Fairly easy</label></div>`;
@@ -1071,11 +1191,25 @@
     var questions = document.getElementById("questions");
     questions.innerHTML = questions_html;
 
-    // instructions html
-    // var instructions_edit_distance_to_embed = document.getElementById("instructions_edit_distance");
-    // instructions_edit_distance_html = "You must add, delete, or alter at least " + THRESHOLD_min_edit_distance + " word(s) and at most " + THRESHOLD_max_edit_distance_ratio * 100 + "% of word(s) of the sentence.";
-    // instructions_edit_distance_html = "You must add, delete, or alter at least " + THRESHOLD_min_edit_distance + " word(s)";
-    // instructions_edit_distance_to_embed.innerHTML = instructions_edit_distance_html;
+    // JavaScript to handle range slider visibility
+    const rangeSliders = document.querySelectorAll('.styled-slider');
+
+    // Add event listeners for mouse and touch events to each slider
+    rangeSliders.forEach(function(slider) {
+        slider.addEventListener('mousedown', handleSliderInteraction);
+        slider.addEventListener('touchstart', handleSliderInteraction);
+        click_listener_record.add(slider.id)
+    });
+
+    function handleSliderInteraction() {
+        // Show the handle when the user interacts with the slider
+        this.classList.remove('invisible-handle');
+
+        // Remove event listeners to prevent unnecessary calls
+        this.removeEventListener('mousedown', handleSliderInteraction);
+        this.removeEventListener('touchstart', handleSliderInteraction);
+        click_listener_record.delete(this.id)
+    }
   }
 
   function toggle() {
@@ -1220,46 +1354,11 @@
   function validate_one(idx){
     console.log("validate_one: " + idx);
 
-    // validate the radio buttons
-    var naturalness_radio = "naturalness_" + idx;
-    if (!($('input[name=' + naturalness_radio + ']:checked').length == 1)) {
-      var alert_msg = " &#10060; You did not answer the question above: " + question_naturalness;
-      var warnings = document.getElementById("val-result_" + idx);
-      warnings.innerHTML = '<span style="font-weight:bold">' + alert_msg + '</span>';
-      return false;
-    }
+    var targetID = "naturalness_" + idx;
 
-    var difficulty_radio = "difficulty_" + idx;
-    if (!($('input[name=' + difficulty_radio + ']:checked').length == 1)) {
-      var alert_msg = " &#10060; You did not answer the question above: " + question_difficulty;
-      var warnings = document.getElementById("val-result_" + idx);
-      warnings.innerHTML = '<span style="font-weight:bold">' + alert_msg + '</span>';
-      return false;
-    }
-
-    var input_sentence = json_items[idx]["sentence"];
-    var input_sentence_length = json_items[idx]["sentence_tokenized"].length;
-    // var THRESHOLD_max_edit_distance = Math.ceil(THRESHOLD_max_edit_distance_ratio * input_sentence_length);
-    var edited_sent = document.getElementById("edited_sentence_" + idx).value;
-    var res = levenshtein_distance(edited_sent.split(" "), input_sentence.split(" "));
-    var edit_distance = res[0];
-    console.log("edit distance " + edit_distance);
-
-    // if ((edit_distance < THRESHOLD_min_edit_distance) || (edit_distance > THRESHOLD_max_edit_distance)){
-    if (edit_distance < THRESHOLD_min_edit_distance){
-      if (THRESHOLD_min_edit_distance === 1){
-        var wordsform = "word";
-      } else {
-        var wordsform = "words";
-      }
-      var alert_msg = " &#10060; <b>You still need to edit this sentence; please add, delete, or alter at least " + THRESHOLD_min_edit_distance + " "+ wordsform +".</b>";
-      var warnings = document.getElementById("val-result_" + idx);
-      warnings.innerHTML = '<span>' + alert_msg + '</span>';
+    if (click_listener_record.has(targetID)) {
       return false;
     } else {
-      var alert_msg = " &#9989; <b>Your edits meets the requirement; please move on.</b> ";
-      var warnings = document.getElementById("val-result_" + idx);
-      warnings.innerHTML = '<span>' + alert_msg + '</span>';
       return true;
     }
   }
@@ -1269,10 +1368,10 @@
 
     // validate for each sentence (edit distance).
     for (var i=0; i<num_sentences; i++){
-      var itemid = json_items[i]["itemid"];
+      var itemid = sorted_items[i]["itemid"];
       var validation_i =  validate_one(itemid.toString());
       if (!validation_i){
-        var alert_msg = "Your answer for Question #" + (i+1).toString() + ' does not meet the requirement. ' + instructions_edit_distance_html;
+        var alert_msg = "Question #" + (i+1).toString() + ' has been left blank. Please answer all questions to proceed. ' + instructions_edit_distance_html;
         validation_failed(alert_msg);
         return false;
       }
@@ -1295,87 +1394,41 @@ window.onload = init;
 
   <div class="container">
     <!-- Title of the HIT -->
-    <h1>What is the intended meaning of these unnatural sentences?</h1>
+    <h1>How natural are these English sentences?</h1>
 
     <p class="lead">
   <span class="orange">You may do only one HIT in this
   batch. Submissions beyond the first will be rejected.</span>
     </p>
+    
 
     <h3>Instructions</h3>
 
     <p>
-      In this task, you will be given English sentences that are unnatural
-      to varying extents. Your task will be to edit each sentence so
-      that the edited version...
+      You will be asked to rate the naturalness of different English sentences from <i>extremely <b>un</b>natural</i>
+      to <i>perfectly natural</i>. You will answer each question by selecting a point 
+      on a sliding scale. Please answer as precisely as possible.
+    </p>
+
+    <p>
+      Some sentences will have only small differences. Please read each sentence <i>carefully.</i> When assessing each sentence,
+      please consider how each sentence would sound...
     </p>
 
     <ol>
       <li>
-        ...captures <span class="important">what 
-        the writer of the original likely meant</span>.
+        ...spoken <span class="important">exactly as written.</span>
       </li>
       <li>
-        ...is <span class="important">perfectly natural and
-      fluent</span> to a native speaker of standard American English.
+        ...spoken by a <span class="important">native and fluent speaker of standard American English.</span>
       </li>
     </ol>
 
     <p>
-      When editing, you should assume that the person who wrote the
-      original sentence was a native speaker of standard American English who 
-      made a mistake. For instance, maybe they were typing quickly or 
-      were intoxicated. If you think there are multiple things 
-      that the writer might plausibly have meant, <span class="important">choose the 
-      one you think is most likely</span>.
-    </p>
-
-    <p>
-      Your edits should first and foremost capture the intended
-      meaning of the sentence, but they should be 
-      <span class="important">as conservative as possible</span> in achieving that goal. That is, 
-      you should strive to keep the original words, phrases, and structure of the sentence 
-      as much as possible. <span class="important">Under no circumstances 
-      should you split the original sentence into two or more</span>.
-    </p>
-
-    <p>
-      If you have to make a choice between...
-
-    <ol>
-      <li>
-        ...an edit that is very conservative but does <i>not</i> capture the likely intended meaning and...
-      </li>
-      <li>
-        ...an edit that is less conservative but does capture the likely intended meaning...
-      </li>
-    </ol>
-
-      ...you should choose the latter.
-    </p>
-
-    <p>
-      A few of the sentences in this task will already sound perfectly
-      natural. For these sentences, you <span class="important">should still
-      provide an edit</span>. The edited sentence <span class="important">should 
-      mean the same thing</span> as the original sentence and be similarly natural 
-      and fluent.
-    </p>
-
-    <p>
-      Because there is variability in how natural and fluent the sentences
-      are, you will be asked to rate the naturalness of the original
-      sentence from <i>extremely <b>un</b>natural</i>
-      to <i>perfectly natural</i>.
-    </p>
-
-    <p>
-      In addition, because it is sometimes difficult to figure out what an
-      unnatural sentence is intended to mean, you will be asked to rate how hard 
-      it is to figure out what each of the original sentences is intended to mean from <i>extremely
-      difficult</i> to <i>extremely easy</i>. Importantly, this is <b>not</b> the
-      same thing as naturalness: as can be seen from the examples below, a
-      sentence's intended meaning can be relatively easy to figure out even if the sentence is pretty unnatural.
+      A few of the questions in this task will contain sentences that sound obviously extremely unnatural or perfectly natural.
+      These are questions we already know the answers to. If you
+      are paying attention, you are certain to get these questions right. <i>If you answer a majority of these such questions wrong, then you risk
+      being rejected from the HIT.</i>
     </p>
 
     <h3>Examples <a href="javascript:toggle();" id="displaytext" style="font-size: 80%;">(hide)</a></h3>
@@ -1385,178 +1438,39 @@ window.onload = init;
       <table class="table table-condensed">
         <thead>
         <tr>
-          <td>Example #1</td>
           <td>&nbsp;</td>
+          <td>Sentence</td>
           <td>Notes</td>
         </tr>
         </thead>
         <tbody>
         <tr>
-          <td style="width: 100px;"><span class="navy">[original]</span></td>
-          <td>The baby seems sleeping.</td>
-          <td>Somewhat unnatural but easy to interpret.</td>
-        </tr>
-        <tr>
-          <td><span class="blue">[good edits]</span></td>
-          <td>The baby seems <span class="blue">to be</span> sleeping.</td>
-          <td>Conservatively fixes grammatical error while preserving meaning.</td>
-        </tr>
-        <tr>
-          <td><span class="red">[bad edits]</span></td>
-          <td><span class="red">I think</span> the baby <span class="red">is sleepy</span>.</td>
-          <td>Edits are not conservative and the meaning is slightly altered.</td>
+          <td>Example #1</td>
+          <td>Someone yells something.</td>
+          <td>Perfectly natural and easy to interpret.</td>
         </tr>
         </tbody>
-      </table>
-
-      <table class="table table-condensed">
-        <thead>
+        <tbody>
         <tr>
           <td>Example #2</td>
-          <td>&nbsp;</td>
-          <td>Notes</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td style="width: 100px;"><span class="navy">[original]</span></td>
-          <td>The doctor made me taking three kinds of medication.</td>
-          <td>Somewhat unnatural but easy to interpret</td>
-        </tr>
-        <tr>
-          <td><span class="blue">[good edits]</span></td>
-          <td>The doctor made me <span class="blue">take</span> three kinds of medication.</td>
-          <td>Conservatively fixes grammatical error while preserving meaning.</td>
-        </tr>
-        <tr>
-          <td><span class="red">[bad edits]</span></td>
-          <td>The doctor <span class="red">saw</span> me taking three kinds of medication.</td>
-          <td>The edits are conservative and fluent, but they don't preserve the original meaning.</td>
+          <td>Someone caught someone which thing happened.</td>
+          <td>Extremely unnatural and difficult to interpret.</td>
         </tr>
         </tbody>
-      </table>
-
-      <table class="table table-condensed">
-        <thead>
+        <tbody>
         <tr>
           <td>Example #3</td>
-          <td>&nbsp;</td>
-          <td>Notes</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td style="width: 100px;"><span class="navy">[original]</span></td>
-          <td>My friend wants that I will bake her a cake.</td>
-          <td>Very unnatural but fairly easy to interpret.</td>
-        </tr>
-        <tr>
-          <td><span class="blue">[good edits]</span></td>
-          <td>My friend wants <span class="blue">me to</span> bake her a cake.</td>
-          <td>Fixes grammatical error involving tense while preserving the meaning.</td>
-        </tr>
-        <tr>
-          <td><span class="red">[bad edits]</span></td>
-          <td>My friend <span class="red">likes</span> that I <span class="red">baked</span> her a cake.</span></td>
-          <td>The edits are conservative and fluent but the meaning is not preserved.</td>
-        </tr>
-        </tbody>
-      </table>
-
-      <table class="table table-condensed">
-        <thead>
-        <tr>
-          <td>Example #4</td>
-          <td>&nbsp;</td>
-          <td>Notes</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td style="width: 100px;"><span class="navy">[original]</span></td>
-          <td>The dog hope owner to give to eat owner dinner.</td>
-          <td>Extremely unnatural but fairly easy to interpret.</td>
-        </tr>
-        <tr>
-          <td><span class="blue">[good edits]</span></td>
-          <td>The dog <span class="blue">hopes its</span> owner <span class="blue">will</span> give <span class="blue">it the</span> owner<span class="blue">'s</span> dinner to eat.</td>
-          <td>Fixes grammatical errors while preserving the likely meaning.</td>
-        </tr>
-        <tr>
-          <td><span class="red">[bad edits]</span></td>
-          <td>The dog <span class="red">hopes its</span> owner <span class="red">will</span> give <span class="red">the dog its</span> dinner <span class="red">to eat</span>.</td>
-          <td>The edits are natural and fluent but the likely meaning is not preserved.</td>
-        </tr>
-        </tbody>
-      </table>
-
-      <table class="table table-condensed">
-        <thead>
-        <tr>
-          <td>Example #5</td>
-          <td>&nbsp;</td>
-          <td>Notes</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td style="width: 100px;"><span class="navy">[original]</span></td>
-          <td>Her boss thinks at her good to work of hers.</td>
-          <td>Extremely unnatural an very difficult to interpret.</td>
-        </tr>
-        <tr>
-          <td><span class="blue">[good edits]</span></td>
-          <td>Her boss thinks <span class="blue">she is</span> good <span class="blue">at her</span> work.</td>
-          <td>Fixes grammatical errors while preserving the likely meaning.</td>
-        </tr>
-        <tr>
-          <td><span class="red">[bad edits]</span></td>
-          <td>Her boss <span class="red">likes that she is</span> good <span class="red">at her</span> work.</td>
-          <td>Not as conservative as possible and meaning has been augmented.</td>
+          <td>Someone bribed something to someone.</td>
+          <td>Very unnatural; fairly easy to interpret, but still very unnatural.</td>
         </tr>
         </tbody>
       </table>
 
     </div>
 
-<p>This research is being carried out by Dr. Aaron White at the University of Rochester. You can read more about the study <a href="http://aaronstevenwhite.io/mturk/Information_Sheet_Turk.pdf">here</a>.</p>
+<p>This research is being carried out by Stephanie Richter at the University of Rochester.</p>
 
-<table width=600>
 
-	<tr>
-		<td><b>Age:</b></td><td><textarea class="form-control" name="age" id="age" rows="1" style="font-size:1em;"></textarea></td>
-	</tr>
-
-	<tr>
-		<td><b>Sex:</b></td>
-
-		<td>
-			<input name="sex" type="radio" value="male" class="obligatory" id="csexmale" /><label for="csexmale"> Male</label><br/>
-			<input name="sex" type="radio" value="female" id="csexfemale"/><label for="csexfemale"> Female</label><br/>
-			<input name="sex" type="radio" value="other" id="csexother"/><label for="csexother"> Other</label><br/>
-			<input name="sex" type="radio" value="decline" id="csexdecline"/><label for="csexdecline"> Decline to state</label>
-		</td>
-	</tr>
-
-	<tr>
-		<td><b>Highest level of education:</b></td><td>
-<input name="education" type="radio" value="somehs" class="obligatory" id="cedsomehs" /><label for="cedsomehs"> Some High School </label><br/>
-<input name="education" type="radio" value="hsdegree" class="obligatory" id="cedhsdegree" /><label for="cedhsdegree"> High School Degree </label><br/>
-<input name="education" type="radio" value="associates" class="obligatory" id="cedassociates" /><label for="cedassociates"> Associate's Degree </label><br/>
-<input name="education" type="radio" value="bachelors" class="obligatory" id="cedbachelors" /><label for="cedbachelors"> Bachelor's Degree </label><br/>
-<input name="education" type="radio" value="advanced" class="obligatory" id="cedadvanced" /><label for="cedadvanced"> Advanced Degree </label>
-</select></td>
-	</tr>
-
-	<tr>
-		<td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;">American English</textarea></td>
-	</tr>
-
-	<tr>
-		<td><b>Do you speak any other languages? (please list):</b></td><td><textarea class="form-control" name="otherlanguage" id="otherlanguage" rows="1" style="font-size:1em;">No</textarea></td>
-	</tr>
-
-</table>
 
     <hr />
 
@@ -1568,6 +1482,44 @@ window.onload = init;
     </div>
     <hr/>
 
+    <table width=600>
+
+      <tr>
+        <td><b>Sex:</b></td>
+    
+        <td>
+          <input name="sex" type="radio" value="male" class="obligatory" id="csexmale" /> <label for="csexmale"> Male</label><br/>
+          <input name="sex" type="radio" value="female" id="csexfemale"/> <label for="csexfemale"> Female</label><br/>
+          <input name="sex" type="radio" value="other" id="csexother"/> <label for="csexother"> Other</label><br/>
+          <input name="sex" type="radio" value="decline" id="csexdecline"/> <label for="csexdecline"> Decline to state</label>
+        </td>
+      </tr>
+    
+      <tr>
+        <td><b>Age:</b></td><td><textarea class="form-control" name="age" id="age" rows="1" style="font-size:1em;"></textarea></td>
+      </tr>
+      
+      <tr>
+        <td><b>Highest level of education:</b></td><td>
+    <input name="education" type="radio" value="somehs" class="obligatory" id="cedsomehs" /> <label for="cedsomehs"> Some High School </label><br/>
+    <input name="education" type="radio" value="hsdegree" class="obligatory" id="cedhsdegree" /> <label for="cedhsdegree"> High School Degree </label><br/>
+    <input name="education" type="radio" value="associates" class="obligatory" id="cedassociates" /> <label for="cedassociates"> Associate's Degree </label><br/>
+    <input name="education" type="radio" value="bachelors" class="obligatory" id="cedbachelors" /> <label for="cedbachelors"> Bachelor's Degree </label><br/>
+    <input name="education" type="radio" value="advanced" class="obligatory" id="cedadvanced" /> <label for="cedadvanced"> Advanced Degree </label><br/>
+    <input name="education" type="radio" value="decline" class="obligatory" id="ceddecline" /> <label for="ceddecline"> Decline to state </label>
+    </select></td>
+      </tr>
+    
+      <tr>
+        <td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;">American English</textarea></td>
+      </tr>
+    
+      <tr>
+        <td><b>Do you speak any other languages? (please list):</b></td><td><textarea class="form-control" name="otherlanguage" id="otherlanguage" rows="1" style="font-size:1em;">No</textarea></td>
+      </tr>
+    
+    </table>
+
     <p align="center">
     <div align="center" id="warnings" style="color:red"></div>
     </p>
@@ -1578,6 +1530,8 @@ window.onload = init;
       <span><textarea class="form-control" cols="120" name="feedback" rows="5"></textarea></span>
       <br/>
     </div>
+
+    
 
     <input type='hidden' value="${hid}" name='hid' id='hid'/>
 
