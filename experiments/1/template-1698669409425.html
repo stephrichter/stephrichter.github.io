@@ -1366,6 +1366,17 @@ input[type=range].invisible-handle::-webkit-slider-thumb {
   function validate() {
     console.log("validate");
 
+    if(document.getElementById("language").value == ''){
+        var alert_msg = "'Native language' field has been left blank. Please fill this field in (near the top of the page) to proceed. ";
+        validation_failed(alert_msg);
+        return false;
+    }
+    if(document.getElementById("otherlanguage").value == ''){
+        var alert_msg = "'Other languages' field has been left blank. Please fill this field in (near the top of the page) to proceed. ";
+        validation_failed(alert_msg);
+        return false;
+    }
+
     // validate for each sentence (edit distance).
     for (var i=0; i<num_sentences; i++){
       var itemid = sorted_items[i]["itemid"];
@@ -1498,11 +1509,11 @@ window.onload = init;
     <table width=600>
     
       <tr>
-        <td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;">American English</textarea></td>
+        <td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;"></textarea></td>
       </tr>
     
       <tr>
-        <td><b>Do you speak any other languages? (please list):</b></td><td><textarea class="form-control" name="otherlanguage" id="otherlanguage" rows="1" style="font-size:1em;">No</textarea></td>
+        <td><b>Do you speak any other languages? (please list, or write 'no'):</b></td><td><textarea class="form-control" name="otherlanguage" id="otherlanguage" onclick="return checkform()" rows="1" style="font-size:1em;"></textarea></td>
       </tr>
     
     </table>
