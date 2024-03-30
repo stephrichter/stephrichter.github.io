@@ -1,0 +1,766 @@
+<script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet" /><!-- colors -->
+<link href="https://s3-us-west-2.amazonaws.com/colors-css/2.2.0/colors.min.css" rel="stylesheet" />
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/bootstrap-slider.js"></script> -->
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+<!-- Bootstrap JS and Popper.js (required for Bootstrap) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
+
+<style type="text/css">
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #444444;
+    font-size: 12pt;
+    background-color: #FAFAFA;
+  }
+
+  .expl {
+    color: #0000FF;
+  }
+  .sentence {
+    font-weight: bold;
+    font-size: 16pt;
+  }
+  .question {
+    font-style: italic;
+  }
+  .important {
+    font-weight: bold;
+  }
+
+
+  .shifted-text {
+    margin-top: 10px; /* Adjust this value to shift the text up or down */
+  }
+
+  #submitButton {
+    margin: auto;
+    display: block;
+    width: auto;
+    background-color: #2172a4;
+    color: #fff;
+    font-size: 20pt;
+    padding: .5rem;
+    cursor: pointer;
+    border-radius: .75rem;
+  }
+
+  #submitButton:hover {
+    background-color: #06486F;
+  }
+
+  textarea {
+    font-size: 12px;
+    margin: 0 auto;
+    display: block;
+    resize: none;
+  }
+
+  /*generated with Input range slider CSS style generator (version 20211225)
+https://toughengineer.github.io/demo/slider-styler*/
+input[type=range].styled-slider {
+  height: auto; 
+  /* 1.2em; */
+  width: 50%;
+  -webkit-appearance: none;
+  margin-top: 0.5em;
+  margin-bottom: -0.25em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+/*webkit*/
+input[type=range].styled-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: calc(max((0.75em - 1px - 1px) * 0.5,0px) - 2em * 0.5);
+}
+
+input[type=range].styled-slider::-webkit-slider-runnable-track {
+  height: 0.75em;
+  border: 1px solid #b2b2b2;
+  border-radius: 0.5em;
+  background: #efefef;
+  box-shadow: none;
+}
+
+/*mozilla*/
+input[type=range].styled-slider::-moz-range-thumb {
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+}
+
+input[type=range].styled-slider::-moz-range-track {
+  height: max(calc(0.75em - 1px - 1px),0px);
+  border: 1px solid #b2b2b2;
+  border-radius: 0.5em;
+  background: #efefef;
+  box-shadow: none;
+}
+
+/*ms*/
+input[type=range].styled-slider::-ms-fill-upper {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].styled-slider::-ms-fill-lower {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].styled-slider::-ms-thumb {
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+input[type=range].styled-slider::-ms-track {
+  height: 0.75em;
+  border-radius: 0.5em;
+  background: #efefef;
+  border: 1px solid #b2b2b2;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+input[type=range].invisible-handle::-webkit-slider-thumb {
+        visibility: hidden;
+        }
+
+        input[type=range].invisible-handle::-moz-range-thumb {
+        visibility: hidden;
+        }
+
+        input[type=range].invisible-handle::-ms-thumb {
+        visibility: hidden;
+        }
+
+
+</style>
+<!-- <script>
+  $('#ex1').slider({
+	formatter: function(value) {
+		return 'Current value: ' + value;
+	}
+});
+</script> -->
+
+<!-- javascript -->
+<script type="text/javascript">
+  var debug_mode = false;
+
+  // (e.g., the max edit distance is 20% of the token length.)
+  // We can overwrite the variables in init() after parsing json.
+  var THRESHOLD_min_edit_distance = 1;
+  // var THRESHOLD_max_edit_distance_ratio = 0.5; // = 50% (1.0 = 100%)
+  var instructions_edit_distance_html = "";
+  var num_sentences = "";
+  var json_items = "";
+  var question_naturalness = "How natural is this sentence?";
+  var question_difficulty  = "How difficult is it to figure out what this sentence is intended to mean?";
+  var click_listener_record = new Set();
+
+  function init() {
+    console.log("init");
+
+    if (debug_mode) {
+      console.log("debug mode");
+      json_items = `[{"verb":"object","verbform":"objecting","tense":"past_progressive","frame":"NP V NP","sentence":"Someone was objecting something.","responsenorm":0.6542822719,"responsevar":-1.5435671209,"freq":14,"accbin":3,"freqbin":1,"frameclass":9,"itemid":0,"sentence_tokenized":["Someone","was","objecting","something","."]},{"verb":"prohibit","verbform":"prohibited","tense":"past","frame":"NP V NP VP","sentence":"Someone prohibited someone do something.","responsenorm":0.6976836324,"responsevar":-1.478115288,"freq":67,"accbin":3,"freqbin":2,"frameclass":2,"itemid":1,"sentence_tokenized":["Someone","prohibited","someone","do","something","."]},{"verb":"think","verbform":"thought","tense":"past","frame":"NP V for NP to VP","sentence":"Someone thought for something to happen.","responsenorm":0.867128849,"responsevar":-1.5697784004,"freq":41232,"accbin":3,"freqbin":3,"frameclass":16,"itemid":2,"sentence_tokenized":["Someone","thought","for","something","to","happen","."]},{"verb":"implore","verbform":"implored","tense":"present","frame":"NP be V about NP","sentence":"Someone is implored about something.","responsenorm":0.7997590899,"responsevar":-1.3655890662,"freq":5,"accbin":3,"freqbin":0,"frameclass":19,"itemid":3,"sentence_tokenized":["Someone","is","implored","about","something","."]},{"verb":"discuss","verbform":"discusses","tense":"present","frame":"NP V NP VPing","sentence":"Someone discusses someone doing something.","responsenorm":1.7039293051,"responsevar":-1.8505965525,"freq":10,"accbin":4,"freqbin":1,"frameclass":10,"itemid":4,"sentence_tokenized":["Someone","discusses","someone","doing","something","."]},{"verb":"doubt","verbform":"doubting","tense":"past_progressive","frame":"NP V NP that S","sentence":"Someone was doubting someone that something happened.","responsenorm":1.8332139254,"responsevar":-0.5033522317,"freq":65,"accbin":4,"freqbin":2,"frameclass":7,"itemid":5,"sentence_tokenized":["Someone","was","doubting","someone","that","something","happened","."]},{"verb":"guess","verbform":"guessed","tense":"past","frame":"NP V","sentence":"Someone guessed.","responsenorm":1.6985598803,"responsevar":-1.1431085098,"freq":379,"accbin":4,"freqbin":3,"frameclass":12,"itemid":6,"sentence_tokenized":["Someone","guessed","."]},{"verb":"infer","verbform":"inferred","tense":"past","frame":"NP V NP to NP","sentence":"Someone inferred something to someone.","responsenorm":1.514835,"responsevar":-1.6223611899,"freq":8,"accbin":4,"freqbin":0,"frameclass":13,"itemid":7,"sentence_tokenized":["Someone","inferred","something","to","someone","."]},{"verb":"forbid","verbform":"forbade","tense":"past","frame":"NP V NP to VP[+eventive]","sentence":"Someone forbade someone to do something.","responsenorm":2.7107498646,"responsevar":-1.4159622378,"freq":22,"accbin":5,"freqbin":1,"frameclass":14,"itemid":8,"sentence_tokenized":["Someone","forbade","someone","to","do","something","."]},{"verb":"complain","verbform":"complains","tense":"present","frame":"NP V about NP","sentence":"Someone complains about something.","responsenorm":2.2106442451,"responsevar":-0.3158347035,"freq":81,"accbin":5,"freqbin":2,"frameclass":15,"itemid":9,"sentence_tokenized":["Someone","complains","about","something","."]},{"verb":"remind","verbform":"reminded","tense":"past_progressive","frame":"NP be V S","sentence":"Someone was being reminded something happened.","responsenorm":2.4148614407,"responsevar":-0.3532447348,"freq":423,"accbin":5,"freqbin":3,"frameclass":1,"itemid":10,"sentence_tokenized":["Someone","was","being","reminded","something","happened","."]},{"verb":"recollect","verbform":"recollected","tense":"past","frame":"NP V whether S","sentence":"Someone recollected whether something happened.","responsenorm":2.3196148872,"responsevar":-1.5423047193,"freq":3,"accbin":5,"freqbin":0,"frameclass":0,"itemid":11,"sentence_tokenized":["Someone","recollected","whether","something","happened","."]},{"verb":"propose","verbform":"proposes","tense":"present","frame":"NP V to NP whether S[+future]","sentence":"Someone proposes to someone whether something happen.","responsenorm":0.2071864009,"responsevar":-1.4777032691,"freq":33,"accbin":2,"freqbin":1,"frameclass":22,"itemid":12,"sentence_tokenized":["Someone","proposes","to","someone","whether","something","happen","."]},{"verb":"command","verbform":"commanded","tense":"past","frame":"NP V whichNP S","sentence":"Someone commanded which thing happened.","responsenorm":0.4488448501,"responsevar":-1.5887602354,"freq":85,"accbin":2,"freqbin":2,"frameclass":20,"itemid":13,"sentence_tokenized":["Someone","commanded","which","thing","happened","."]},{"verb":"realize","verbform":"realized","tense":"past","frame":"NP V about whether S","sentence":"Someone realized about whether something happened.","responsenorm":0.4075170159,"responsevar":-1.8114163404,"freq":1834,"accbin":2,"freqbin":3,"frameclass":8,"itemid":14,"sentence_tokenized":["Someone","realized","about","whether","something","happened","."]},{"verb":"prefer","verbform":"preferring","tense":"past_progressive","frame":"NP V so","sentence":"Someone was preferring so.","responsenorm":0.1504923701,"responsevar":-1.8784301284,"freq":9,"accbin":2,"freqbin":0,"frameclass":23,"itemid":15,"sentence_tokenized":["Someone","was","preferring","so","."]},{"verb":"hint","verbform":"hinted","tense":"past","frame":"NP be V","sentence":"Someone was hinted.","responsenorm":-0.3603429198,"responsevar":-1.7426225091,"freq":27,"accbin":1,"freqbin":1,"frameclass":6,"itemid":16,"sentence_tokenized":["Someone","was","hinted","."]},{"verb":"regret","verbform":"regretted","tense":"past","frame":"NP be V to VP[+eventive]","sentence":"Someone was regretted to do something.","responsenorm":-0.6394891143,"responsevar":-1.1325706062,"freq":71,"accbin":1,"freqbin":2,"frameclass":18,"itemid":17,"sentence_tokenized":["Someone","was","regretted","to","do","something","."]},{"verb":"consider","verbform":"considered","tense":"past","frame":"NP V to NP that S[-tense]","sentence":"Someone considered to someone that something happen.","responsenorm":-0.5400506854,"responsevar":-0.7277663924,"freq":1182,"accbin":1,"freqbin":3,"frameclass":3,"itemid":18,"sentence_tokenized":["Someone","considered","to","someone","that","something","happen","."]},{"verb":"notify","verbform":"notifies","tense":"present","frame":"NP V VPing","sentence":"Someone notifies doing something.","responsenorm":-0.4961290359,"responsevar":-1.2981288878,"freq":1,"accbin":1,"freqbin":0,"frameclass":17,"itemid":19,"sentence_tokenized":["Someone","notifies","doing","something","."]},{"verb":"perplex","verbform":"perplexed","tense":"past_progressive","frame":"NP be V so","sentence":"Someone was being perplexed so.","responsenorm":-1.4340653419,"responsevar":-0.6518610644,"freq":17,"accbin":0,"freqbin":1,"frameclass":5,"itemid":20,"sentence_tokenized":["Someone","was","being","perplexed","so","."]},{"verb":"welcome","verbform":"welcomed","tense":"past_progressive","frame":"NP be V that S[+future]","sentence":"Someone was being welcomed that something would happen.","responsenorm":-1.0790618658,"responsevar":-0.5561556112,"freq":104,"accbin":0,"freqbin":2,"frameclass":11,"itemid":21,"sentence_tokenized":["Someone","was","being","welcomed","that","something","would","happen","."]},{"verb":"send","verbform":"sends","tense":"present","frame":"NP V to VP[+eventive]","sentence":"Someone sends to do something.","responsenorm":-1.6859643459,"responsevar":-1.1955487357,"freq":585,"accbin":0,"freqbin":3,"frameclass":4,"itemid":22,"sentence_tokenized":["Someone","sends","to","do","something","."]},{"verb":"hasten","verbform":"hastened","tense":"past","frame":"NP be V that S[-tense]","sentence":"Someone was hastened that something happen.","responsenorm":-1.0181225538,"responsevar":-1.1320589808,"freq":5,"accbin":0,"freqbin":0,"frameclass":21,"itemid":23,"sentence_tokenized":["Someone","was","hastened","that","something","happen","."]}]`;
+      json_items = jQuery.parseJSON(json_items);
+    } else {
+      // json_items = `${json}`;
+      //!!!!!!!!!!!!!!!!!!! LINE TO CHANGE
+      json_items = 
+      [{"id": "roga-ask-full-noctx-tw-6", "verb": "ask", "target_sent": "Then I asked whether he could check if I gave my name and IC number instead."}, {"id": "roga-examine-full-noctx-tw-6", "verb": "examine", "target_sent": "So just tell me what search criteria you used so that we can both examine whether those criteria would yield an exhaustive list of results."}, {"id": "roga-inquire-full-noctx-tw-6", "verb": "inquire", "target_sent": "They refunded me after I emailed to inquire whether I was supposed to receive one or three."}, {"id": "roga-investigate-full-noctx-tw-6", "verb": "investigate", "target_sent": "The intention of this survey was to investigate whether Trump's constant attacks on the media were effective."}, {"id": "roga-wonder-full-noctx-tw-6", "verb": "wonder", "target_sent": "I wonder whether he was aware of Nakashima's work."}, {"id": "resp-discover-full-noctx-tw-6", "verb": "discover", "target_sent": "I like the idea that he would seek to discover whether other Snow Elves had avoided becoming a degenerate remnant such as the Falmer."}, {"id": "resp-forget-full-noctx-tw-6", "verb": "forget", "target_sent": "I forget whether I was diagnosed with Asperger's or ADHD first."}, {"id": "resp-know-full-noctx-tw-6", "verb": "know", "target_sent": "Establishing your goals lets you know whether your game is good or not."}, {"id": "resp-realize-full-noctx-tw-6", "verb": "realize", "target_sent": "Once you spar and get (lightly) hit, you'll realize whether or not this is something you'd like to do more often or on a higher tier of skill."}, {"id": "resp-remember-full-noctx-tw-6", "verb": "remember", "target_sent": "Your son isn't going to remember whether she was there or not honestly."}, {"id": "anti-believe-full-noctx-tw-6", "verb": "believe", "target_sent": "It's on everyone individually to believe whether this is an excuse to say offensive things or not."}, {"id": "anti-fear-full-noctx-tw-6", "verb": "fear", "target_sent": "Choose wisely instead of fearing whether she will choose you."}, {"id": "anti-hope-full-noctx-tw-6", "verb": "hope", "target_sent": "I am just hoping whether I can find a special setting on the PS3 that will make it work, but I am not sure what causes the problem that is only present when I load PS1 games."}, {"id": "anti-imagine-full-noctx-tw-6", "verb": "imagine", "target_sent": "When I interview a candidate I wanna know how they work and how they think, because all I do is imagine whether I'd want them on my project or not."}, {"id": "anti-think-full-noctx-tw-6", "verb": "think", "target_sent": "Starting to think whether owning a house is even worth it, yes I'll want to own one when I'm retired but when do I buy?"}, {"id": "roga-ask-full-noctx-tt-6", "verb": "ask", "target_sent": "She became cold and distant and started to hang out with her classmates more in high school and she even asked that we took a break off our relationship and eventually break up."}, {"id": "roga-examine-full-noctx-tt-6", "verb": "examine", "target_sent": "Even if you get the right answer for some question about buoyancy (for example), carefully examine that you could confidently work through similar problems without questioning yourself at all."}, {"id": "roga-inquire-full-noctx-tt-6", "verb": "inquire", "target_sent": "If inquiring that a streaming site is down is a DMCA warning by Reddit Legal, that would imply that asking/linking about any site a copyright holder dislikes is now fair game."}, {"id": "roga-investigate-full-noctx-tt-6", "verb": "investigate", "target_sent": "If your wife is buying fakes, has she ever investigated that she is supporting sweatshop labor and child labor?"}, {"id": "roga-wonder-full-noctx-tt-6", "verb": "wonder", "target_sent": "I wondered that he knew so well how Jedi work, since most people in the galaxy never meet a Jedi or see their tricks."}, {"id": "resp-discover-full-noctx-tt-6", "verb": "discover", "target_sent": "States with tougher gun laws often discover that places with more lax legislation are the source of many of the firearms used in crimes."}, {"id": "resp-forget-full-noctx-tt-6", "verb": "forget", "target_sent": "You forget that the first time we saw him meet the Ghost Rider, he expressed surprise too."}, {"id": "resp-know-full-noctx-tt-6", "verb": "know", "target_sent": "Don't rush in, but also know that as soon as the gig is over, lights go on and they basically shoo you out."}, {"id": "resp-realize-full-noctx-tt-6", "verb": "realize", "target_sent": "I'm here to help people realize that there is a power in their spending money, and that we can change the industry for the better."}, {"id": "resp-remember-full-noctx-tt-6", "verb": "remember", "target_sent": "Just remember that his problems have nothing to do with YOU."}, {"id": "anti-believe-full-noctx-tt-6", "verb": "believe", "target_sent": "I believe that the government should not intervene in the economy."}, {"id": "anti-fear-full-noctx-tt-6", "verb": "fear", "target_sent": "I fear that the remake will try to make the game fit better to what the developer team view as relevant to our modern standards."}, {"id": "anti-hope-full-noctx-tt-6", "verb": "hope", "target_sent": "I really hope that you can beat this disease."}, {"id": "anti-imagine-full-noctx-tt-6", "verb": "imagine", "target_sent": "I'm having trouble even imagining that you think the best response in that situation would be to call 911."}, {"id": "anti-think-full-noctx-tt-6", "verb": "think", "target_sent": "I still think that people should be able to buy guns for hunting, collecting and shooting at the range."}, {"id": "roga-ask-full-noctx-fw-7", "verb": "ask", "target_sent": "Today she had cravings for brownies and asked whether I made her some."}, {"id": "roga-examine-full-noctx-fw-7", "verb": "examine", "target_sent": "It's easy (and natural) to just take your triple kill as evidence of your own skill and not even examine whether you might've had very little to do with it."}, {"id": "roga-inquire-full-noctx-fw-7", "verb": "inquire", "target_sent": "By the end of January, she inquires whether I should get a job."}, {"id": "roga-investigate-full-noctx-fw-7", "verb": "investigate", "target_sent": "However I do think it's worth investigating whether she had high risk factors in her personal life and that her husband was on a \"fishing trip\" when she was murdered."}, {"id": "roga-wonder-full-noctx-fw-7", "verb": "wonder", "target_sent": "However, I was rereading the books and wondered whether he never really bothered to even try to keep his incompetence a secret."}, {"id": "resp-discover-full-noctx-fw-7", "verb": "discover", "target_sent": "I discovered whether, while the music industry was cool, I wasn't the kind of person for it."}, {"id": "resp-forget-full-noctx-fw-7", "verb": "forget", "target_sent": "But don't forget whether an opinion is just that, not fact."}, {"id": "resp-know-full-noctx-fw-7", "verb": "know", "target_sent": "We also know whether money buys SAT scores, where children with access to prep material score much higher than those who don't have it."}, {"id": "resp-realize-full-noctx-fw-7", "verb": "realize", "target_sent": "The lecturer realized whether the whole class was about to fail, so let us use the internet for the second half."}, {"id": "resp-remember-full-noctx-fw-7", "verb": "remember", "target_sent": "But it's important to remember whether we have NEVER lost to the Rockies in the 2018 Regular Season, or anyone for that matter."}, {"id": "anti-believe-full-noctx-fw-7", "verb": "believe", "target_sent": "It's so hard for non-ADHDers to understand what we go through, and in result they assume things or flat out neglect to believe whether it's a serious issue."}, {"id": "anti-fear-full-noctx-fw-7", "verb": "fear", "target_sent": "We've already seen the market begin to react for many items, and I fear whether things will only get worse if this trade hold remains."}, {"id": "anti-hope-full-noctx-fw-7", "verb": "hope", "target_sent": "I hope whether he effects some change and makes the church more humane."}, {"id": "anti-imagine-full-noctx-fw-7", "verb": "imagine", "target_sent": "I'd say the best crossovers are the ones where you could imagine whether the two universes coexist perfectly."}, {"id": "anti-think-full-noctx-fw-7", "verb": "think", "target_sent": "A lot of people think whether law school is like undergrad or medical school where it's good as long as you go somewhere."}, {"id": "roga-ask-full-noctx-ft-7", "verb": "ask", "target_sent": "After watching the video we were asked that the engineer was right to blow the whistle and our professor's answer was that no, the engineer should have kept quiet about it to avoid being fired and possibly blacklisted in his field."}, {"id": "roga-examine-full-noctx-ft-7", "verb": "examine", "target_sent": "So maybe consider your own actions, and examine that they can trigger people to leave."}, {"id": "roga-inquire-full-noctx-ft-7", "verb": "inquire", "target_sent": "They have no business inquiring that the patient is in need of a refill."}, {"id": "roga-investigate-full-noctx-ft-7", "verb": "investigate", "target_sent": "Wilson had been engaged by the the government to investigate that the Iraqi regime had been attempting to acquire nuclear weapons."}, {"id": "roga-wonder-full-noctx-ft-7", "verb": "wonder", "target_sent": "She was always very shy, so I keep wondering that she's still like that now."}, {"id": "resp-discover-full-noctx-ft-7", "verb": "discover", "target_sent": "I look forward to discovering that that holds water or breaks down when the game is up again."}, {"id": "resp-forget-full-noctx-ft-7", "verb": "forget", "target_sent": "I forget that it's 'Combat Medic' or 'Tech Support'."}, {"id": "resp-know-full-noctx-ft-7", "verb": "know", "target_sent": "I don't know that they're working on a comeback, but at least MiSO is doing some solo stuff."}, {"id": "resp-realize-full-noctx-ft-7", "verb": "realize", "target_sent": "First step is to realize that someone WANTS to talk."}, {"id": "resp-remember-full-noctx-ft-7", "verb": "remember", "target_sent": "I can't remember that my mom was calm or scared at the time."}, {"id": "anti-believe-full-noctx-ft-7", "verb": "believe", "target_sent": "You now have a choice to believe that these are actually the exam questions."}, {"id": "anti-fear-full-noctx-ft-7", "verb": "fear", "target_sent": "There is no need to fear that someone will or will not do chores, they cannot impose not-chore-doing on someone the way they can in situations where that defense is usually brought up."}, {"id": "anti-hope-full-noctx-ft-7", "verb": "hope", "target_sent": "I'm not too excited about the documentaries and such, as I've seen many before, but I'm torn between hoping that they add the additional cut content (extended extended editions)."}, {"id": "anti-imagine-full-noctx-ft-7", "verb": "imagine", "target_sent": "It's up to you to imagine that she misled the kids."}, {"id": "anti-think-full-noctx-ft-7", "verb": "think", "target_sent": "They never stop to think that that makes sense, and their visceral reaction to anything contrary to their belief is vehement defensive behavior."}]
+      // [{"id": "roga-ask-full-noctx-tw-2", "verb": "ask", "target_sent": "When you complete the FAFSA form, you will be asked whether you had a drug conviction for an offense that occurred while you were receiving federal student aid."}, {"id": "roga-examine-full-noctx-tw-2", "verb": "examine", "target_sent": "I requested a follow-up sonogram in 6 weeks to examine whether the cysts will shrink/disappear."}, {"id": "roga-inquire-full-noctx-tw-2", "verb": "inquire", "target_sent": "And you could also inquire whether they have research assistantship opportunities that you could apply for."}, {"id": "roga-investigate-full-noctx-tw-2", "verb": "investigate", "target_sent": "You have to find where in your thinking there are unquestioned, blind beliefs about yourself, and then investigate whether they are actually true."}, {"id": "roga-wonder-full-noctx-tw-2", "verb": "wonder", "target_sent": "I wonder whether this is the angels or some kind of power."}, {"id": "resp-discover-full-noctx-tw-2", "verb": "discover", "target_sent": "The main thing is for you to discover whether you have asthma or not."}, {"id": "resp-forget-full-noctx-tw-2", "verb": "forget", "target_sent": "But I had forgotten whether or not she liked mayonnaise on her sandwiches."}, {"id": "resp-know-full-noctx-tw-2", "verb": "know", "target_sent": "Also, you don't need to date someone to know whether or not they are a mature person."}, {"id": "resp-realize-full-noctx-tw-2", "verb": "realize", "target_sent": "Ideally, there is no time for him to realize whether or not you're armed."}, {"id": "resp-remember-full-noctx-tw-2", "verb": "remember", "target_sent": "I honestly don't remember whether or not it was taught in US history class in high school."}, {"id": "anti-believe-full-noctx-tw-2", "verb": "believe", "target_sent": "Some of the accusations on Trump tho are big accusations and I have no idea to believe whether he committed those actions and whether he is in the right or wrong to do so."}, {"id": "anti-fear-full-noctx-tw-2", "verb": "fear", "target_sent": "Developers should be allowed to create whatever they want without fearing whether or not it will even be allowed the 70% market share Steam provides."}, {"id": "anti-hope-full-noctx-tw-2", "verb": "hope", "target_sent": "Already annoying to me for anything you can't just go online and do, but at least if I knew you wouldn't have to hope whether or not you even get it, I might chat for it."}, {"id": "anti-imagine-full-noctx-tw-2", "verb": "imagine", "target_sent": "Sometimes I see recommendations on Goodreads and so I read a bunch of negative reviews to try to imagine whether or not I'm ready to deal with the book's alleged shortcomings."}, {"id": "anti-think-full-noctx-tw-2", "verb": "think", "target_sent": "Take some screenshots, write a description and set a price and think whether you would want to buy the game if you were browsing Steam."}, {"id": "roga-ask-full-noctx-tt-2", "verb": "ask", "target_sent": "I explained that I saw exactly where she was coming from but asked that she saw it from my point of view as well."}, {"id": "roga-examine-full-noctx-tt-2", "verb": "examine", "target_sent": "My current fight is that they want me training people -- but do not want to promote me and my current job does not have training as part of it, and management keeps guilting me about \"my knowledge being locked up with me\" rather than examine that they created that by not training (I learned my job with virtually no training)."}, {"id": "roga-inquire-full-noctx-tt-2", "verb": "inquire", "target_sent": "I only inquired that I was trying to get in contact with him."}, {"id": "roga-investigate-full-noctx-tt-2", "verb": "investigate", "target_sent": "Based on purely probability I'd say that it's worth investigating that the coin is unfair, and that's all I'm saying now."}, {"id": "roga-wonder-full-noctx-tt-2", "verb": "wonder", "target_sent": "I wonder that the reason they aren't overtly obnoxious is because their films are received well both critically and commercially."}, {"id": "resp-discover-full-noctx-tt-2", "verb": "discover", "target_sent": "After doing some research I discovered that the level of chemicals they use in the manufacturing process is downright toxic."}, {"id": "resp-forget-full-noctx-tt-2", "verb": "forget", "target_sent": "She forgot that her husband (my grandfather) had already passed away."}, {"id": "resp-know-full-noctx-tt-2", "verb": "know", "target_sent": "I understand if you guys don't want to accept me anymore, because I know that if one of my friends did this, I would stop talking to them."}, {"id": "resp-realize-full-noctx-tt-2", "verb": "realize", "target_sent": "Now I realize that he has a talent that we may never see again."}, {"id": "resp-remember-full-noctx-tt-2", "verb": "remember", "target_sent": "You'll probably fight more too, but try to remember that everyone is tired and you've just had this huge life change."}, {"id": "anti-believe-full-noctx-tt-2", "verb": "believe", "target_sent": "Because she seemed to believe that he was trapped in his role and wanted to be redeemed."}, {"id": "anti-fear-full-noctx-tt-2", "verb": "fear", "target_sent": "We fear that people will respond negatively to what we share."}, {"id": "anti-hope-full-noctx-tt-2", "verb": "hope", "target_sent": "I just hope that this helped in more ways than we can think and that your time is still a comin'!"}, {"id": "anti-imagine-full-noctx-tt-2", "verb": "imagine", "target_sent": "It's hard to imagine that a 22 year old who took a few philosophy courses would be more qualified to judge. . ."}, {"id": "anti-think-full-noctx-tt-2", "verb": "think", "target_sent": "Since I have gotten dogs, it bugs me too much to think that, with how much I love them, pigs are even smarter than they are."}, {"id": "roga-ask-full-noctx-fw-3", "verb": "ask", "target_sent": "I cautiously asked whether he knew that was the incorrect answer to the equation."}, {"id": "roga-examine-full-noctx-fw-3", "verb": "examine", "target_sent": "I just want to examine whether we may be playing with fire, and should consider what can be done to mitigate the risks."}, {"id": "roga-inquire-full-noctx-fw-3", "verb": "inquire", "target_sent": "If you haven't received a confirmation that it's been received for review, then it's safe to call the hiring manager to inquire whether it's been received or if the position is still available."}, {"id": "roga-investigate-full-noctx-fw-3", "verb": "investigate", "target_sent": "We have to notify sellers a customer wants a refund, or investigate whether the package is actually missing."}, {"id": "roga-wonder-full-noctx-fw-3", "verb": "wonder", "target_sent": "She's a very strong-willed person, but I sometimes wonder whether maybe one day it will be too much."}, {"id": "resp-discover-full-noctx-fw-3", "verb": "discover", "target_sent": "I also discovered whether food played into the problem."}, {"id": "resp-forget-full-noctx-fw-3", "verb": "forget", "target_sent": "When it comes to equal rights and freedom, people sometimes tend to forget whether equality is supposed to give you more rights and not to take them away from you for no reason."}, {"id": "resp-know-full-noctx-fw-3", "verb": "know", "target_sent": "If you're willing to move and live where he gets sent, do so knowing whether you chose to make the sacrifice and it won't be all sunny days."}, {"id": "resp-realize-full-noctx-fw-3", "verb": "realize", "target_sent": "In my impatience, I started to add more, and realized whether as long as you maintain proper control of the heat, it just takes time (and some trial and error at first) to get perfectly cooked bacon, no matter how raw or crispy you like it."}, {"id": "resp-remember-full-noctx-fw-3", "verb": "remember", "target_sent": "When I get horrendously depressed and think about dying, I remember whether those worlds are out there and that I could one day return to them."}, {"id": "anti-believe-full-noctx-fw-3", "verb": "believe", "target_sent": "I don't want to be that guy who just preaches penalty bias, because I truly don't believe whether it's against the Leafs. ."}, {"id": "anti-fear-full-noctx-fw-3", "verb": "fear", "target_sent": "At the moment I'm living with my parents but I fear whether if they find out, they may stop supporting me financially and housing-wise."}, {"id": "anti-hope-full-noctx-fw-3", "verb": "hope", "target_sent": "I hope whether the government shuts them down."}, {"id": "anti-imagine-full-noctx-fw-3", "verb": "imagine", "target_sent": "I imagine whether bikes in general could be easily washed away and travel for kilometers, in similar circumstances."}, {"id": "anti-think-full-noctx-fw-3", "verb": "think", "target_sent": "This rage isn't making anyone think whether being a Trump supporter is a reasonable thing to do."}, {"id": "roga-ask-full-noctx-ft-3", "verb": "ask", "target_sent": "You do not need to evaluate each system and ask that it helps or hurts you."}, {"id": "roga-examine-full-noctx-ft-3", "verb": "examine", "target_sent": "This investigation will examine that the Department of Internal Services was in compliance with Nova Scotia's Freedom of Information and Protection of Privacy Act."}, {"id": "roga-inquire-full-noctx-ft-3", "verb": "inquire", "target_sent": "When I called to inquire that they had shipped the correct ones and to get a tracking number I was told they had not even been made yet and would be another 3 days."}, {"id": "roga-investigate-full-noctx-ft-3", "verb": "investigate", "target_sent": "They investigated that it was social pressure to be masculine, with neatness being considered feminine, but didn't find that to be the case."}, {"id": "roga-wonder-full-noctx-ft-3", "verb": "wonder", "target_sent": "I do wonder that this is just a marketing gimmick or if Adidas truly care about this stuff."}, {"id": "resp-discover-full-noctx-ft-3", "verb": "discover", "target_sent": "Keep wearing it even if it makes you feel silly, eventually you will discover that it's really something you want to wear or not."}, {"id": "resp-forget-full-noctx-ft-3", "verb": "forget", "target_sent": "I'll still blank out every now and then, forgetting that they asked for a diet or something simple."}, {"id": "resp-know-full-noctx-ft-3", "verb": "know", "target_sent": "I was doing some research about the EDS diagnostic criteria because I wanted to know that these people's claims were legit or not."}, {"id": "resp-realize-full-noctx-ft-3", "verb": "realize", "target_sent": "That is when I realize that the game was an addiction to me or not."}, {"id": "resp-remember-full-noctx-ft-3", "verb": "remember", "target_sent": "I can't remember that it's ticked by default or not, though."}, {"id": "anti-believe-full-noctx-ft-3", "verb": "believe", "target_sent": "It comes down to them believing that he's telling the truth about Roe."}, {"id": "anti-fear-full-noctx-ft-3", "verb": "fear", "target_sent": "We've weathered corrupt politicians before, but I fear that the world can survive the supervillain sitting in the Oval Office."}, {"id": "anti-hope-full-noctx-ft-3", "verb": "hope", "target_sent": "And I was hoping that someone who has profound knowledge of the materials being used can shed some light on the matter."}, {"id": "anti-imagine-full-noctx-ft-3", "verb": "imagine", "target_sent": "I'd suggest to you rather imagine that you'd like to have a little one running around you :) and seeing her/him growing up."}, {"id": "anti-think-full-noctx-ft-3", "verb": "think", "target_sent": "Take time to yourself to think that you will be able to trust him after this."}]
+      // [{"id": "roga-ask-full-noctx-tw-1", "verb": "ask", "target_sent": "I've messaged the seller asking whether is it Mk1 or Mk2."}, {"id": "roga-examine-full-noctx-tw-1", "verb": "examine", "target_sent": "This might be the important factor to examine whether this requirement gets in the way of ICE."}, {"id": "roga-inquire-full-noctx-tw-1", "verb": "inquire", "target_sent": "Make sure you tell them that you believed that this was preventative care and inquire whether it should be coded as such."}, {"id": "roga-investigate-full-noctx-tw-1", "verb": "investigate", "target_sent": "Third, we have people whose jobs are to investigate whether or not someone requires punishment."}, {"id": "roga-wonder-full-noctx-tw-1", "verb": "wonder", "target_sent": "Now I'm wondering whether this was just a coincidence, or if I actually got sick from NETA's product."}, {"id": "resp-discover-full-noctx-tw-1", "verb": "discover", "target_sent": "At first, you could try doing it the long way, and discover whether or not the selected region is chosen randomly or not."}, {"id": "resp-forget-full-noctx-tw-1", "verb": "forget", "target_sent": "I understand the concepts well, but if you explained to me each concept, I would forget whether it's RPO or RTO because the terms themselves seem similar."}, {"id": "resp-know-full-noctx-tw-1", "verb": "know", "target_sent": "If you don't know whether you can pull it off in good taste, just avoid it entirely."}, {"id": "resp-realize-full-noctx-tw-1", "verb": "realize", "target_sent": "It is however, up to you to realize whether or not you want to utilize it."}, {"id": "resp-remember-full-noctx-tw-1", "verb": "remember", "target_sent": "I can't even remember whether or not I had plated armor."}, {"id": "anti-believe-full-noctx-tw-1", "verb": "believe", "target_sent": "Ask yourself if you truly believe whether Trump is good or bad for this country."}, {"id": "anti-fear-full-noctx-tw-1", "verb": "fear", "target_sent": "The mouse is 3 weeks old and the only thing that keeps me from returning it is fearing whether the local store is going to replace it or put me through the dread of sending it for 3-4 weeks away to be repaired..."}, {"id": "anti-hope-full-noctx-tw-1", "verb": "hope", "target_sent": "Because now I am sitting here, hoping whether or not I got it..."}, {"id": "anti-imagine-full-noctx-tw-1", "verb": "imagine", "target_sent": "She told me to be kinder to myself and to imagine whether these are the negative phrases I would say to a good friend."}, {"id": "anti-think-full-noctx-tw-1", "verb": "think", "target_sent": "Now the lens that came with the camera broke and I am thinking whether I should get a new camera or just buy a new lens."}, {"id": "roga-ask-full-noctx-tt-1", "verb": "ask", "target_sent": "If they liked it, I asked that they made an interpretation of the story in an abstract cover, for an additional $900."}, {"id": "roga-examine-full-noctx-tt-1", "verb": "examine", "target_sent": "However, you have to realize, no matter how toxic or abusive, most people are quite fine metaphorically getting their cheeks slapped by family (mommy & daddy issues are a tale old as time) and will rush to defend them before they even examine that they're the ones that need saving."}, {"id": "roga-inquire-full-noctx-tt-1", "verb": "inquire", "target_sent": "You might just want to inquire that you are looking at rescuing a shelter mutt (just looking, no dog or even breed in mind) and want to make sure you have all the paperwork regarding vaccines, breed identification from a veterinarian, training, insurance (of all kinds) so that the whole process moves smoothly and no future problems arise."}, {"id": "roga-investigate-full-noctx-tt-1", "verb": "investigate", "target_sent": "They even investigated that the 10-dollar bills were brand new when withdrawn from the bank and thus sequential, and were used to pay for the memberships."}, {"id": "roga-wonder-full-noctx-tt-1", "verb": "wonder", "target_sent": "These days I tend to wonder that there is a good chance that neither MVP, MVVM nor MVI are the right answer, though."}, {"id": "resp-discover-full-noctx-tt-1", "verb": "discover", "target_sent": "After drilling the lock the buyer discovered that its previous owner was the government."}, {"id": "resp-forget-full-noctx-tt-1", "verb": "forget", "target_sent": "Also can't forget that the consumer ultimately makes the choice. ."}, {"id": "resp-know-full-noctx-tt-1", "verb": "know", "target_sent": "But I also know that you don't wanna do it on Easter."}, {"id": "resp-realize-full-noctx-tt-1", "verb": "realize", "target_sent": "He teaches in a dull manner, but what he says is interesting and once you try to do the work on your own, you realize that he really lays out all of the information very clearly for you."}, {"id": "resp-remember-full-noctx-tt-1", "verb": "remember", "target_sent": "Then I remember that people like this don't want to feel better."}, {"id": "anti-believe-full-noctx-tt-1", "verb": "believe", "target_sent": "And ultimately, that's what led me to believe that science and rational beliefs based on evidence make a lot more sense than a 500-year-old mythology that is based on older mythologies."}, {"id": "anti-fear-full-noctx-tt-1", "verb": "fear", "target_sent": "I very much fear that it has squandered that opportunity."}, {"id": "anti-hope-full-noctx-tt-1", "verb": "hope", "target_sent": "I hoped that you enjoyed your stay there."}, {"id": "anti-imagine-full-noctx-tt-1", "verb": "imagine", "target_sent": "I would imagine that a case could be made for selective enforcement in the example you provided."}, {"id": "anti-think-full-noctx-tt-1", "verb": "think", "target_sent": "But I don't think that he would respect the legislative branch as president if he didn't do it as governor."}, {"id": "roga-ask-full-noctx-fw-2", "verb": "ask", "target_sent": "I explained that I saw exactly where she was coming from but asked whether she saw it from my point of view as well."}, {"id": "roga-examine-full-noctx-fw-2", "verb": "examine", "target_sent": "My current fight is that they want me training people -- but do not want to promote me and my current job does not have training as part of it, and management keeps guilting me about \"my knowledge being locked up with me\" rather than examine whether they created that by not training (I learned my job with virtually no training)."}, {"id": "roga-inquire-full-noctx-fw-2", "verb": "inquire", "target_sent": "I only inquired whether I was trying to get in contact with him."}, {"id": "roga-investigate-full-noctx-fw-2", "verb": "investigate", "target_sent": "Based on purely probability I'd say that it's worth investigating whether the coin is unfair, and that's all I'm saying now."}, {"id": "roga-wonder-full-noctx-fw-2", "verb": "wonder", "target_sent": "I wonder whether the reason they aren't overtly obnoxious is because their films are received well both critically and commercially."}, {"id": "resp-discover-full-noctx-fw-2", "verb": "discover", "target_sent": "After doing some research I discovered whether the level of chemicals they use in the manufacturing process is downright toxic."}, {"id": "resp-forget-full-noctx-fw-2", "verb": "forget", "target_sent": "She forgot whether her husband (my grandfather) had already passed away."}, {"id": "resp-know-full-noctx-fw-2", "verb": "know", "target_sent": "I understand if you guys don't want to accept me anymore, because I know whether if one of my friends did this, I would stop talking to them."}, {"id": "resp-realize-full-noctx-fw-2", "verb": "realize", "target_sent": "Now I realize whether he has a talent that we may never see again."}, {"id": "resp-remember-full-noctx-fw-2", "verb": "remember", "target_sent": "You'll probably fight more too, but try to remember whether everyone is tired and you've just had this huge life change."}, {"id": "anti-believe-full-noctx-fw-2", "verb": "believe", "target_sent": "Because she seemed to believe whether he was trapped in his role and wanted to be redeemed."}, {"id": "anti-fear-full-noctx-fw-2", "verb": "fear", "target_sent": "We fear whether people will respond negatively to what we share."}, {"id": "anti-hope-full-noctx-fw-2", "verb": "hope", "target_sent": "I just hope whether this helped in more ways than we can think and that your time is still a comin'!"}, {"id": "anti-imagine-full-noctx-fw-2", "verb": "imagine", "target_sent": "It's hard to imagine whether a 22 year old who took a few philosophy courses would be more qualified to judge. . ."}, {"id": "anti-think-full-noctx-fw-2", "verb": "think", "target_sent": "Since I have gotten dogs, it bugs me too much to think whether, with how much I love them, pigs are even smarter than they are."}, {"id": "roga-ask-full-noctx-ft-2", "verb": "ask", "target_sent": "When you complete the FAFSA form, you will be asked that you had a drug conviction for an offense that occurred while you were receiving federal student aid."}, {"id": "roga-examine-full-noctx-ft-2", "verb": "examine", "target_sent": "I requested a follow-up sonogram in 6 weeks to examine that the cysts will shrink/disappear."}, {"id": "roga-inquire-full-noctx-ft-2", "verb": "inquire", "target_sent": "And you could also inquire that they have research assistantship opportunities that you could apply for."}, {"id": "roga-investigate-full-noctx-ft-2", "verb": "investigate", "target_sent": "You have to find where in your thinking there are unquestioned, blind beliefs about yourself, and then investigate that they are actually true."}, {"id": "roga-wonder-full-noctx-ft-2", "verb": "wonder", "target_sent": "I wonder that this is the angels or some kind of power."}, {"id": "resp-discover-full-noctx-ft-2", "verb": "discover", "target_sent": "The main thing is for you to discover that you have asthma or not."}, {"id": "resp-forget-full-noctx-ft-2", "verb": "forget", "target_sent": "But I had forgotten that she liked mayonnaise on her sandwiches."}, {"id": "resp-know-full-noctx-ft-2", "verb": "know", "target_sent": "Also, you don't need to date someone to know that they are a mature person."}, {"id": "resp-realize-full-noctx-ft-2", "verb": "realize", "target_sent": "Ideally, there is no time for him to realize that you're armed."}, {"id": "resp-remember-full-noctx-ft-2", "verb": "remember", "target_sent": "I honestly don't remember that it was taught in US history class in high school."}, {"id": "anti-believe-full-noctx-ft-2", "verb": "believe", "target_sent": "Some of the accusations on Trump tho are big accusations and I have no idea to believe that he committed those actions and that he is in the right or wrong to do so."}, {"id": "anti-fear-full-noctx-ft-2", "verb": "fear", "target_sent": "Developers should be allowed to create whatever they want without fearing that it will even be allowed the 70% market share Steam provides."}, {"id": "anti-hope-full-noctx-ft-2", "verb": "hope", "target_sent": "Already annoying to me for anything you can't just go online and do, but at least if I knew you wouldn't have to hope that you even get it, I might chat for it."}, {"id": "anti-imagine-full-noctx-ft-2", "verb": "imagine", "target_sent": "Sometimes I see recommendations on Goodreads and so I read a bunch of negative reviews to try to imagine that I'm ready to deal with the book's alleged shortcomings."}, {"id": "anti-think-full-noctx-ft-2", "verb": "think", "target_sent": "Take some screenshots, write a description and set a price and think that you would want to buy the game if you were browsing Steam."}]
+      ;      // json_items = jQuery.parseJSON(json_items);
+
+    }
+    const catch_trials = [{"id": "catch-full-noctx-13",
+        "verb": "ask",
+        "target_sent": "I asked till the school year would whether just the end of last it."},
+    {"id": "catch-full-noctx-14",
+        "verb": "investigate",
+        "target_sent": "Police were still used or during the incident investigating pepper spray were whether any weapons."},
+    {"id": "catch-full-noctx-15",
+        "verb": "realize",
+        "target_sent": "To flying realize their reasoning, is in hate a flag it really know you and whether flown to need the person."},
+    {"id": "catch-full-noctx-16",
+        "verb": "investigate",
+        "target_sent": "The he blames everything on a real therapist advertised and a pre-existing condition, never was the article blames, the chatbot doesn't as on everything likely which instead had article investigate that."},
+    {"id": "catch-full-noctx-17",
+        "verb": "think",
+        "target_sent": "The problem Gabe fix might to it is, be the wrong one or even try doesn't that he think."}];
+    // const catch_trials = jQuery.parseJSON(json_constant_items);
+
+    // const content_items = jQuery.parseJSON(json_items)//.slice(0, 60) //!!!!!!!!!!!
+    const content_items = json_items
+    // const catch_trials = json_items.slice(60, 65)
+    const shuffleArray = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    };
+    shuffleArray(catch_trials)
+
+    // Create an empty dictionary to store the bins
+    const bins = {};
+
+    // Iterate through the items and populate the bins accordingly
+    content_items.forEach(item => {
+        const key = item.verb;
+        if (bins[key]) {
+            bins[key].push(item);
+        } else {
+            bins[key] = [item];
+        }
+    });
+
+    // const sorted_items = customSort(content_items);
+
+    // Initialize an empty list to store the selected items
+    sorted_items = [];
+
+    // Get the keys of bins and shuffle them
+    const binKeys = Object.keys(bins);
+    shuffleArray(binKeys);
+
+    // Iterate through each bin key and select one item randomly from each until every bin is empty
+    let binsNotEmpty = true;
+    while (binsNotEmpty) {
+        binsNotEmpty = false;
+        for (const key of binKeys) {
+            if (bins[key].length > 0) {
+                const randomIndex = Math.floor(Math.random() * bins[key].length);
+                sorted_items.push(bins[key][randomIndex]);
+                bins[key].splice(randomIndex, 1);
+                binsNotEmpty = true;
+            }
+        }
+    }
+
+    // Iterate through each bin and select one item randomly from each until every bin is empty
+    // let binsNotEmpty = true;
+    // while (binsNotEmpty) {
+    //     binsNotEmpty = false;
+    //     shuffleArray(bins)
+    //     for (const key in bins) {
+    //         if (bins[key].length > 0) {
+    //             const randomIndex = Math.floor(Math.random() * bins[key].length);
+    //             sorted_items.push(bins[key][randomIndex]);
+    //             bins[key].splice(randomIndex, 1);
+    //             binsNotEmpty = true;
+    //         }
+    //     }
+    // }
+
+    // Output the selected items
+    // console.log(sorted_items);
+    // console.log('selected bins')
+    
+
+    // Function to sort items in the desired way
+    const customSort = (items) => {
+        const sortedItems = [];
+        const verbCounts = {};
+
+        // Count the occurrences of each value of "sand"
+        items.forEach(item => {
+            verbCounts[item.verb] = verbCounts[item.verb] ? verbCounts[item.verb] + 1 : 1;
+        });
+
+        // Sort the "sand" values by counts in descending order
+        const sortedVerbs = Object.keys(verbCounts).sort((a, b) => verbCounts[b] - verbCounts[a]);
+
+        // Reorder the items based on the sorted "sand" values
+        while (sortedItems.length < items.length) {
+            for (let i = 0; i < sortedVerbs.length; i++) {
+                const sand = sortedVerbs[i];
+                const index = items.findIndex(item => item.verb === sand && !sortedItems.includes(item));
+                if (index !== -1) {
+                    sortedItems.push(items[index]);
+                }
+            }
+        }
+
+        return sortedItems;
+    };
+    // sorted_items = customSort(sorted_items);
+
+
+
+    // 31 39 44 47 56
+    sorted_items.splice(32, 0, catch_trials[0]);
+    sorted_items.splice(40, 0, catch_trials[1]);
+    sorted_items.splice(44, 0, catch_trials[2]);
+    sorted_items.splice(56, 0, catch_trials[3]);
+    sorted_items.splice(61, 0, catch_trials[4]);
+
+    // // Sort the items using the custom sorting function
+    // // const sortedItems = customSort(content_items);
+
+    // // Output the sorted items
+    // console.log(sorted_items);
+
+
+    // console.log("WOOOAAAH");
+
+    // accbins = json_items.map(elem => elem['accbin'])
+    //                     .filter((value, index, elem) => elem.indexOf(value) === index)
+    //                     .sort((a, b) => b - a)
+    //                     .map(idx => json_items.filter(elem => elem['accbin'] === idx)
+    //                                           .sort((a, b) => a['freq'] - b['freq']));
+    // console.log(accbins)
+
+    // json_items = [accbins[0].pop(), accbins[accbins.length-1].pop()];
+    // console.log(json_items)
+
+    // accbins.map(bin => shuffle(bin)); // shuffle within bins
+    // shuffle(accbins); // shuffle the bins    
+
+    // binidx = 0;
+    // incomplete = true;
+  
+    // while (incomplete){
+    //   if (accbins[binidx].length > 0) {
+    //     json_items.push(accbins[binidx].pop());
+    //   } else {
+    //     binidx++;
+    //   }
+    //   incomplete = accbins.some(elem => elem.length > 0);  
+    // }
+
+    //console.log(json_items);
+    num_sentences = sorted_items.length;
+
+    var questions_html = "";
+
+    for (var i=0; i<num_sentences; i++){
+      var itemid = sorted_items[i]["id"];
+      var sentence = sorted_items[i]["target_sent"];
+      // var sentence_length = json_items[i]["sentence_tokenized"].length;
+      // var THRESHOLD_max_edit_distance = Math.ceil(THRESHOLD_max_edit_distance_ratio * sentence_length);
+
+      questions_html += `<p><span class="sentence">` + (i+1).toString() + `. ` + sentence + `</span></p>`;
+      questions_html += `<p><span class="question">` + question_naturalness + `</span>`;
+      questions_html += `<div class="form-control-group"><label>Extremely <u>un</u>natural</label>  <input type="range" min="1" max="100" class="styled-slider invisible-handle" name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `"/> <label>Perfectly natural</label></div>`;
+      
+      
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="5" />Perfectly natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="4" />Fairly natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="3" />Somewhat <u>un</u>natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="2" />Very <u>un</u>natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="1" />Extremely <u>un</u>natural</label></div>`;
+      // questions_html += `<p><span class="question">` + question_difficulty + `</span></p>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="5" />Extremely easy</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="4" />Fairly easy</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="3" />Somewhat difficult</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="2" />Very difficult</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="1" />Extremely difficult</label></div>`;
+      // questions_html += `<p><span class="question">Edited sentence:</span></p>`;
+      // questions_html += `<textarea class="form-control" name="edited_sentence_` + itemid.toString() + `" id="edited_sentence_` + itemid.toString() + `" rows="1" style="font-size:1em;">` + sentence + `</textarea><br />`;
+      // questions_html += `<input class="btn btn-info btn-sm" type="button" value="Check your answer" id="valbtn_`+ itemid.toString() + `" onclick="validate_one(` + itemid.toString() +`)" />`;
+      // questions_html += `<span id="val-result_` + itemid.toString() + `"></span>`;
+      questions_html += `<hr />`;
+    }
+
+    var questions = document.getElementById("questions");
+    questions.innerHTML = questions_html;
+
+    // JavaScript to handle range slider visibility
+    const rangeSliders = document.querySelectorAll('.styled-slider');
+
+    // Add event listeners for mouse and touch events to each slider
+    rangeSliders.forEach(function(slider) {
+        slider.addEventListener('mousedown', handleSliderInteraction);
+        slider.addEventListener('touchstart', handleSliderInteraction);
+        click_listener_record.add(slider.id)
+    });
+
+    function handleSliderInteraction() {
+        // Show the handle when the user interacts with the slider
+        this.classList.remove('invisible-handle');
+
+        // Remove event listeners to prevent unnecessary calls
+        this.removeEventListener('mousedown', handleSliderInteraction);
+        this.removeEventListener('touchstart', handleSliderInteraction);
+        click_listener_record.delete(this.id)
+    }
+  }
+
+  function toggle() {
+
+    var ele = document.getElementById("examples");
+    var text = document.getElementById("displaytext");
+
+    if (ele.style.display != "none") {
+      ele.style.display = "none";
+      text.innerHTML = "(show)";
+    } else {
+      ele.style.display = "block";
+      text.innerHTML = "(hide)";
+    }
+  }
+
+  /**
+   * Randomly shuffle an array
+   * https://stackoverflow.com/a/2450976/1293256
+   * @param  {Array} array The array to shuffle
+   * @return {String}      The first item in the shuffled array
+   */
+  function shuffle(array) {
+
+  	          var currentIndex = array.length;
+	          var temporaryValue, randomIndex;
+
+	          // While there remain elements to shuffle...
+	          while (0 !== currentIndex) {
+		    // Pick a remaining element...
+		    randomIndex = Math.floor(Math.random() * currentIndex);
+		    currentIndex -= 1;
+
+		    // And swap it with the current element.
+		    temporaryValue = array[currentIndex];
+		    array[currentIndex] = array[randomIndex];
+		    array[randomIndex] = temporaryValue;
+	          }
+
+	          return array;
+                };
+
+
+  function levenshtein_distance(a, b) {
+    // computing edit distance between two arrays
+    // usage: e.g., var res = levenshtein_distance("This is not a sentence.".split(" "), "This is a sentence.".split(" "));
+    // edit_distance = res[0];
+    // edits = res[1];
+
+    const ins_cost = 1; // insertion cost
+    const del_cost = 1; // deletion cost
+    const sub_cost = 1; // substitution cost
+
+    console.log(a);
+    console.log(b);
+    a.unshift("#");
+    b.unshift("#");
+
+    var distanceMatrix = new Array(b.length).fill().map(() => Array(a.length).fill(0));
+    //console.log(distanceMatrix);
+
+    var edMatrix = new Array(b.length).fill().map(() => Array(a.length).fill(0));
+
+    //initialize Matrices
+    distanceMatrix[0][0] = 0;
+    edMatrix[0][0] = "#";
+
+    for (var i = 1; i < a.length; i++) {
+      distanceMatrix[0][i] = i;
+      edMatrix[0][i] = "I";
+    }
+    for (var j = 1; j < b.length; j++) {
+      distanceMatrix[j][0] = j;
+      edMatrix[j][0] = "D";
+    }
+
+    for (var j = 1; j < a.length; j++) {
+      for (var i = 1; i < b.length; i++) {
+
+        var cost1 = distanceMatrix[i][j-1] + ins_cost;
+        var cost2 = distanceMatrix[i-1][j] + del_cost;
+
+        var cost3 = null;
+        if (a[j] == b[i]) {
+          cost3 = distanceMatrix[i-1][j-1];
+        } else {
+          cost3 = distanceMatrix[i-1][j-1] + sub_cost;
+        }
+
+        if (Math.min(cost1, cost2, cost3) == cost3) {
+          distanceMatrix[i][j] = cost3;
+          edMatrix[i][j] = "R";
+        } else if (Math.min(cost1, cost2, cost3) == cost2) {
+          distanceMatrix[i][j] = cost2;
+          edMatrix[i][j] = "D";
+        } else {
+          distanceMatrix[i][j] = cost1;
+          edMatrix[i][j] = "I";
+        }
+      }
+    }
+    //console.log(distanceMatrix);
+
+    // get edits
+    j = a.length-1;
+    i = b.length-1;
+    var prev_edit = edMatrix[i][j];
+    var edits = [prev_edit];
+    while (prev_edit != "#") {
+      if (prev_edit == "I") {
+        prev_edit = edMatrix[i][j-1];
+        j = j-1 ;
+        edits.unshift("I");
+      } else if (prev_edit == "D") {
+        prev_edit = edMatrix[i-1][j];
+        i = i-1;
+        edits.unshift("D");
+      } else {
+
+        if (distanceMatrix[i][j] == distanceMatrix[i-1][j-1]) {
+          edits.unshift("_");
+        } else {
+          edits.unshift("R");
+        }
+        prev_edit = edMatrix[i-1][j-1];
+        j = j-1;
+        i = i-1;
+      }
+    }
+
+    var ed = parseInt(distanceMatrix[b.length-1][a.length-1]);
+    edits.pop();
+    return [ed, edits]
+  }
+
+  function validation_failed(alert_msg){
+    var warnings = document.getElementById("warnings");
+    alert(alert_msg);
+    warnings.innerHTML = '<span style="color:red;">' + alert_msg + '</span>';
+  }
+
+  function validate_one(idx){
+    // console.log("validate_one: " + idx);
+
+    var targetID = "naturalness_" + idx;
+
+    if (click_listener_record.has(targetID)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  function validate() {
+    console.log("validate");
+
+    if(document.getElementById("language").value == ''){
+        var alert_msg = "'Native language' field has been left blank. Please fill this field in (near the top of the page) to proceed. ";
+        validation_failed(alert_msg);
+        return false;
+    }
+    if(document.getElementById("otherlanguage").value == ''){
+        var alert_msg = "'Other languages' field has been left blank. Please fill this field in (near the top of the page) to proceed. ";
+        validation_failed(alert_msg);
+        return false;
+    }
+
+    // validate for each sentence (edit distance).
+    for (var i=0; i<num_sentences; i++){
+      var itemid = sorted_items[i]["itemid"];
+      var validation_i =  validate_one(itemid.toString());
+      if (!validation_i){
+        var alert_msg = "Question #" + (i+1).toString() + ' has been left blank. Please answer all questions to proceed. ' + instructions_edit_distance_html;
+        validation_failed(alert_msg);
+        return false;
+      }
+    }
+    return true;
+  }
+
+window.onload = init;
+
+// // Get all sliders
+// var sliders = document.querySelectorAll(".styled-slider");
+
+// // Disable scroll wheel for sliders
+// sliders.forEach(function(slider) {
+//     slider.addEventListener('wheel', function(event) {
+//         // Prevent the default scroll behavior for the slider
+//         event.preventDefault();
+
+//         // Scroll the page instead (adjust the value as needed)
+//         window.scrollBy(0, event.deltaY);
+//     });
+// });
+
+// Add a document-level event listener for the wheel event
+  // document.addEventListener('wheel', function(event) {
+  //           // Check if the target of the event is an input element with type "range"
+  //           if (event.target.tagName.toLowerCase() === 'input' && event.target.type === 'range') {
+  //               // Prevent default behavior for the wheel event on range inputs
+  //               event.preventDefault();
+  //           }
+  //       });
+</script>
+</head>
+
+<body>
+<noscript>
+  <h1 align="center" style="color:white; background-color: crimson">In this HIT, you must enable JavaScript. <br> This warning appears only when JavaScript is disabled. <br> (Please check https://enablejavascript.co/) <br/></h1>
+</noscript>
+
+
+<form name='mturk_form' method='post' id='mturk_form' action='/mturk/externalSubmit' onsubmit="return validate()">
+  <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+  <div>&nbsp;</div>
+
+  <div class="container">
+    <!-- Title of the HIT -->
+    <h1 class="important">How natural are these English sentences?</h1>
+
+    <p style="color:#FF0000";>
+      <span class="important">Content warning:</span> You will encounter some sentences that you may find uncomfortable. Some sentences may contain swearing, or allude to sensitive topics such as sex, violence, abuse, racism, war, religion, or politics.
+      Your participation is entirely voluntary, and you are under no obligation to continue.
+    </p>
+    <div>&nbsp;</div>
+
+    <h3>Instructions</h3>
+
+    <p>
+      You will be asked to rate the naturalness of different English sentences from <i>extremely <b>un</b>natural</i>
+      to <i>perfectly natural</i>. You will answer each question by selecting a point 
+      on a sliding scale. Please answer as precisely as possible.
+    </p>
+
+    <p>
+      Some sentences may contain terms you are unfamiliar with, or contain confusing circumstances. That is perfectly okay! Simply do your best to understand the task and provide your responses based on the information provided.
+      If you encounter any terms you're unsure about, please try to interpret them as best you can.
+    </p>
+
+    <p>
+      Please read each sentence <i>carefully.</i> When assessing each sentence,
+      please consider how each sentence would sound...
+    </p>
+
+    <ol>
+      <li>
+        ...spoken <span class="important">exactly as written.</span>
+      </li>
+      <li>
+        ...spoken by a <span class="important">native and fluent speaker of standard American English.</span>
+      </li>
+    </ol>
+
+    <p>
+      A few of the questions in this task will contain sentences that sound obviously extremely unnatural or perfectly natural.
+      These are questions we already know the answers to. If you
+      are paying attention, you are certain to get these questions right. <i>If you answer a majority of these such questions wrong, then you risk
+      being rejected from the HIT.</i>
+    </p>
+
+    <h3>Examples <a href="javascript:toggle();" id="displaytext" style="font-size: 80%;">(hide)</a></h3>
+
+    <!-- examples -->
+    <div class="container" id="examples">
+      <table class="table table-condensed">
+        <thead>
+        <tr>
+          <td>&nbsp;</td>
+          <td>Sentence</td>
+          <td>Notes</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Example #1</td>
+          <td>Someone yelled my name.</td>
+          <td>Perfectly natural and easy to interpret.</td>
+        </tr>
+        </tbody>
+        <tbody>
+        <tr>
+          <td>Example #2</td>
+          <td>My father caught John which he went fishing.</td>
+          <td>Extremely unnatural and difficult to interpret.</td>
+        </tr>
+        </tbody>
+        <tbody>
+        <tr>
+          <td>Example #3</td>
+          <td>She bribed something to the politician.</td>
+          <td>Very unnatural; fairly easy to interpret, but still very unnatural.</td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+<p>This research is being carried out by Dr. Aaron White at the University of Rochester. You can read more about the study <a href="http://aaronstevenwhite.io/mturk/Information_Sheet_Turk.pdf">here</a>.</p>
+
+
+
+    <hr />
+
+    <table width=600>
+    
+      <tr>
+        <td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;"></textarea></td>
+      </tr>
+    
+      <tr>
+        <td><b>Do you speak any other languages? (please list, or write 'no'):</b></td><td><textarea class="form-control" name="otherlanguage" id="otherlanguage" onclick="return checkform()" rows="1" style="font-size:1em;"></textarea></td>
+      </tr>
+    
+    </table>
+    <div>&nbsp;</div>
+
+    <!-- Questions -->
+    <h3>Questions</h3>
+
+    <div class="panel-body" style="font-size:1em;">
+      <p id="questions"></p>
+    </div>
+    <hr/>
+
+    <p align="center">
+    <div align="center" id="warnings" style="color:red"></div>
+    </p>
+
+    <div>
+      <p>Comments and feedback
+        (Please leave a comment if you have any questions, suggestions, etc.)</p>
+      <span><textarea class="form-control" cols="120" name="feedback" rows="5"></textarea></span>
+      <br/>
+    </div>
+
+    
+
+    <input type='hidden' value="${hid}" name='hid' id='hid'/>
+
+    <div>
+      <p align="center"><u>By clicking Submit, you agree that you have read the instructions and examples.</u></p>
+      <p align="center">
+        <input type='submit' id='submitButton' value='Submit'/>
+      </p>
+    </div>
+
+  </div>
+
+</form>
+<script language='Javascript'>turkSetAssignmentID();</script>
+
+</body>
