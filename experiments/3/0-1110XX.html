@@ -179,7 +179,7 @@ input[type=range].invisible-handle::-webkit-slider-thumb {
   var instructions_edit_distance_html = "";
   var num_sentences = "";
   var json_items = "";
-  var question_naturalness = `How natural is the <span style="font-weight:bold">second</span> sentence, given the first sentence?`;
+  var question_naturalness = `How natural is the <span style="font-weight:bold">second</span> sentence?`;
   var question_difficulty  = "How difficult is it to figure out what this sentence is intended to mean?";
   var click_listener_record = new Set();
 
@@ -199,25 +199,26 @@ input[type=range].invisible-handle::-webkit-slider-thumb {
 
     }
     const catch_trials = [{"id": "catch-full-ctx-13", 
-      "verb": "ask",
-      "prior_sent": "The long and short of it is that a suicidally depressed man used an app to encourage those urges.",
-      "target_sent": "I asked whether it would just last till the end of the school year."},
-    {"id": "catch-full-ctx-14",
-      "verb": "investigate",
+    "verb": "ask", 
+    "prior_sent": "I believe this was in August/September though.", 
+    "target_sent": "I asked till the school year would whether just the end of last it."}, 
+    {"id": "catch-full-ctx-14", 
+    "verb": "investigate", 
+    "prior_sent": "The ceremony in question happens every two years and can include daggers.",
+     "target_sent": "Police were still used or during the incident investigating pepper spray were whether any weapons."}, 
+     {"id": "catch-full-ctx-15", 
+     "verb": "realize", 
+     "prior_sent": "England is the most common one, but there are plenty of Welsh, Irish and Scottish nationalists that display those countries' flags.", 
+     "target_sent": "To flying realize their reasoning, is in hate a flag it really know you and whether flown to need the person."}, 
+     {"id": "catch-full-ctx-16",
+      "verb": "investigate", 
+      "prior_sent": "The long and short of it is that a suicidally depressed man used an app to encourage those urges.", 
+      "target_sent": "The he blames everything on a real therapist advertised and a pre-existing condition, never was the article blames, the chatbot doesn't as on everything likely which instead had article investigate that."}, 
+      {"id": "catch-full-ctx-17", 
+      "verb": "think", 
       "prior_sent": "You can be a Gabe: well intentioned but still wrong sometimes.", 
-      "target_sent": "Police were still investigating whether pepper spray or any weapons were used during the incident."},
-    {"id": "catch-full-ctx-15",
-      "verb": "realize",
-      "prior_sent": "And women are not the oppressors.",
-      "target_sent": "To realize whether a flag is flown in hate, you really need to know the person flying it and their reasoning."},
-    {"id": "catch-full-ctx-16", 
-      "verb": "investigate",
-      "prior_sent": "The ceremony in question happens every two years and can include daggers.",
-      "target_sent": "The article doesn't investigate that he likely had a pre-existing condition, and instead blames everything on the chatbot, which was never advertised as a real therapist."},
-    {"id": "catch-full-ctx-17",
-      "verb": "think",
-      "prior_sent": "I believe this was in August/September though.",
-      "target_sent": "The problem is, Gabe doesn't try to fix it or even think that he might be the wrong one."}];
+      "target_sent": "The problem Gabe fix might to it is, be the wrong one or even try doesn't that he think."}];
+    
     // {"id": "catch-full-ctx-18", 
     //   "verb": "examine",
     //   "prior_sent": "England is the most common one, but there are plenty of Welsh, Irish and Scottish nationalists that display those countries' flags.",
