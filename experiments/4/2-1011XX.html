@@ -1,0 +1,768 @@
+<script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet" /><!-- colors -->
+<link href="https://s3-us-west-2.amazonaws.com/colors-css/2.2.0/colors.min.css" rel="stylesheet" />
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/bootstrap-slider.js"></script> -->
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+<!-- Bootstrap JS and Popper.js (required for Bootstrap) -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
+
+<style type="text/css">
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #444444;
+    font-size: 12pt;
+    background-color: #FAFAFA;
+  }
+
+  .expl {
+    color: #0000FF;
+  }
+  .sentence {
+    font-weight: bold;
+    font-size: 16pt;
+  }
+  .question {
+    font-style: italic;
+  }
+  .important {
+    font-weight: bold;
+  }
+
+
+  .shifted-text {
+    margin-top: 10px; /* Adjust this value to shift the text up or down */
+  }
+
+  #submitButton {
+    margin: auto;
+    display: block;
+    width: auto;
+    background-color: #2172a4;
+    color: #fff;
+    font-size: 20pt;
+    padding: .5rem;
+    cursor: pointer;
+    border-radius: .75rem;
+  }
+
+  #submitButton:hover {
+    background-color: #06486F;
+  }
+
+  textarea {
+    font-size: 12px;
+    margin: 0 auto;
+    display: block;
+    resize: none;
+  }
+
+  /*generated with Input range slider CSS style generator (version 20211225)
+https://toughengineer.github.io/demo/slider-styler*/
+input[type=range].styled-slider {
+  height: auto; 
+  /* 1.2em; */
+  width: 50%;
+  -webkit-appearance: none;
+  margin-top: 0.5em;
+  margin-bottom: -0.25em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+/*webkit*/
+input[type=range].styled-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: calc(max((0.75em - 1px - 1px) * 0.5,0px) - 2em * 0.5);
+}
+
+input[type=range].styled-slider::-webkit-slider-runnable-track {
+  height: 0.75em;
+  border: 1px solid #b2b2b2;
+  border-radius: 0.5em;
+  background: #efefef;
+  box-shadow: none;
+}
+
+/*mozilla*/
+input[type=range].styled-slider::-moz-range-thumb {
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+}
+
+input[type=range].styled-slider::-moz-range-track {
+  height: max(calc(0.75em - 1px - 1px),0px);
+  border: 1px solid #b2b2b2;
+  border-radius: 0.5em;
+  background: #efefef;
+  box-shadow: none;
+}
+
+/*ms*/
+input[type=range].styled-slider::-ms-fill-upper {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].styled-slider::-ms-fill-lower {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].styled-slider::-ms-thumb {
+  width: 1em;
+  height: 2em;
+  border-radius: 1em;
+  background: #23272B;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+input[type=range].styled-slider::-ms-track {
+  height: 0.75em;
+  border-radius: 0.5em;
+  background: #efefef;
+  border: 1px solid #b2b2b2;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+input[type=range].invisible-handle::-webkit-slider-thumb {
+        visibility: hidden;
+        }
+
+        input[type=range].invisible-handle::-moz-range-thumb {
+        visibility: hidden;
+        }
+
+        input[type=range].invisible-handle::-ms-thumb {
+        visibility: hidden;
+        }
+
+
+</style>
+<!-- <script>
+  $('#ex1').slider({
+	formatter: function(value) {
+		return 'Current value: ' + value;
+	}
+});
+</script> -->
+
+<!-- javascript -->
+<script type="text/javascript">
+  var debug_mode = false;
+
+  // (e.g., the max edit distance is 20% of the token length.)
+  // We can overwrite the variables in init() after parsing json.
+  var THRESHOLD_min_edit_distance = 1;
+  // var THRESHOLD_max_edit_distance_ratio = 0.5; // = 50% (1.0 = 100%)
+  var instructions_edit_distance_html = "";
+  var num_sentences = "";
+  var json_items = "";
+  var question_naturalness = "How natural is this sentence?";
+  var question_difficulty  = "How difficult is it to figure out what this sentence is intended to mean?";
+  var click_listener_record = new Set();
+
+  function init() {
+    console.log("init");
+
+    if (debug_mode) {
+      console.log("debug mode");
+      json_items = `[{"verb":"object","verbform":"objecting","tense":"past_progressive","frame":"NP V NP","sentence":"Someone was objecting something.","responsenorm":0.6542822719,"responsevar":-1.5435671209,"freq":14,"accbin":3,"freqbin":1,"frameclass":9,"itemid":0,"sentence_tokenized":["Someone","was","objecting","something","."]},{"verb":"prohibit","verbform":"prohibited","tense":"past","frame":"NP V NP VP","sentence":"Someone prohibited someone do something.","responsenorm":0.6976836324,"responsevar":-1.478115288,"freq":67,"accbin":3,"freqbin":2,"frameclass":2,"itemid":1,"sentence_tokenized":["Someone","prohibited","someone","do","something","."]},{"verb":"think","verbform":"thought","tense":"past","frame":"NP V for NP to VP","sentence":"Someone thought for something to happen.","responsenorm":0.867128849,"responsevar":-1.5697784004,"freq":41232,"accbin":3,"freqbin":3,"frameclass":16,"itemid":2,"sentence_tokenized":["Someone","thought","for","something","to","happen","."]},{"verb":"implore","verbform":"implored","tense":"present","frame":"NP be V about NP","sentence":"Someone is implored about something.","responsenorm":0.7997590899,"responsevar":-1.3655890662,"freq":5,"accbin":3,"freqbin":0,"frameclass":19,"itemid":3,"sentence_tokenized":["Someone","is","implored","about","something","."]},{"verb":"discuss","verbform":"discusses","tense":"present","frame":"NP V NP VPing","sentence":"Someone discusses someone doing something.","responsenorm":1.7039293051,"responsevar":-1.8505965525,"freq":10,"accbin":4,"freqbin":1,"frameclass":10,"itemid":4,"sentence_tokenized":["Someone","discusses","someone","doing","something","."]},{"verb":"doubt","verbform":"doubting","tense":"past_progressive","frame":"NP V NP that S","sentence":"Someone was doubting someone that something happened.","responsenorm":1.8332139254,"responsevar":-0.5033522317,"freq":65,"accbin":4,"freqbin":2,"frameclass":7,"itemid":5,"sentence_tokenized":["Someone","was","doubting","someone","that","something","happened","."]},{"verb":"guess","verbform":"guessed","tense":"past","frame":"NP V","sentence":"Someone guessed.","responsenorm":1.6985598803,"responsevar":-1.1431085098,"freq":379,"accbin":4,"freqbin":3,"frameclass":12,"itemid":6,"sentence_tokenized":["Someone","guessed","."]},{"verb":"infer","verbform":"inferred","tense":"past","frame":"NP V NP to NP","sentence":"Someone inferred something to someone.","responsenorm":1.514835,"responsevar":-1.6223611899,"freq":8,"accbin":4,"freqbin":0,"frameclass":13,"itemid":7,"sentence_tokenized":["Someone","inferred","something","to","someone","."]},{"verb":"forbid","verbform":"forbade","tense":"past","frame":"NP V NP to VP[+eventive]","sentence":"Someone forbade someone to do something.","responsenorm":2.7107498646,"responsevar":-1.4159622378,"freq":22,"accbin":5,"freqbin":1,"frameclass":14,"itemid":8,"sentence_tokenized":["Someone","forbade","someone","to","do","something","."]},{"verb":"complain","verbform":"complains","tense":"present","frame":"NP V about NP","sentence":"Someone complains about something.","responsenorm":2.2106442451,"responsevar":-0.3158347035,"freq":81,"accbin":5,"freqbin":2,"frameclass":15,"itemid":9,"sentence_tokenized":["Someone","complains","about","something","."]},{"verb":"remind","verbform":"reminded","tense":"past_progressive","frame":"NP be V S","sentence":"Someone was being reminded something happened.","responsenorm":2.4148614407,"responsevar":-0.3532447348,"freq":423,"accbin":5,"freqbin":3,"frameclass":1,"itemid":10,"sentence_tokenized":["Someone","was","being","reminded","something","happened","."]},{"verb":"recollect","verbform":"recollected","tense":"past","frame":"NP V whether S","sentence":"Someone recollected whether something happened.","responsenorm":2.3196148872,"responsevar":-1.5423047193,"freq":3,"accbin":5,"freqbin":0,"frameclass":0,"itemid":11,"sentence_tokenized":["Someone","recollected","whether","something","happened","."]},{"verb":"propose","verbform":"proposes","tense":"present","frame":"NP V to NP whether S[+future]","sentence":"Someone proposes to someone whether something happen.","responsenorm":0.2071864009,"responsevar":-1.4777032691,"freq":33,"accbin":2,"freqbin":1,"frameclass":22,"itemid":12,"sentence_tokenized":["Someone","proposes","to","someone","whether","something","happen","."]},{"verb":"command","verbform":"commanded","tense":"past","frame":"NP V whichNP S","sentence":"Someone commanded which thing happened.","responsenorm":0.4488448501,"responsevar":-1.5887602354,"freq":85,"accbin":2,"freqbin":2,"frameclass":20,"itemid":13,"sentence_tokenized":["Someone","commanded","which","thing","happened","."]},{"verb":"realize","verbform":"realized","tense":"past","frame":"NP V about whether S","sentence":"Someone realized about whether something happened.","responsenorm":0.4075170159,"responsevar":-1.8114163404,"freq":1834,"accbin":2,"freqbin":3,"frameclass":8,"itemid":14,"sentence_tokenized":["Someone","realized","about","whether","something","happened","."]},{"verb":"prefer","verbform":"preferring","tense":"past_progressive","frame":"NP V so","sentence":"Someone was preferring so.","responsenorm":0.1504923701,"responsevar":-1.8784301284,"freq":9,"accbin":2,"freqbin":0,"frameclass":23,"itemid":15,"sentence_tokenized":["Someone","was","preferring","so","."]},{"verb":"hint","verbform":"hinted","tense":"past","frame":"NP be V","sentence":"Someone was hinted.","responsenorm":-0.3603429198,"responsevar":-1.7426225091,"freq":27,"accbin":1,"freqbin":1,"frameclass":6,"itemid":16,"sentence_tokenized":["Someone","was","hinted","."]},{"verb":"regret","verbform":"regretted","tense":"past","frame":"NP be V to VP[+eventive]","sentence":"Someone was regretted to do something.","responsenorm":-0.6394891143,"responsevar":-1.1325706062,"freq":71,"accbin":1,"freqbin":2,"frameclass":18,"itemid":17,"sentence_tokenized":["Someone","was","regretted","to","do","something","."]},{"verb":"consider","verbform":"considered","tense":"past","frame":"NP V to NP that S[-tense]","sentence":"Someone considered to someone that something happen.","responsenorm":-0.5400506854,"responsevar":-0.7277663924,"freq":1182,"accbin":1,"freqbin":3,"frameclass":3,"itemid":18,"sentence_tokenized":["Someone","considered","to","someone","that","something","happen","."]},{"verb":"notify","verbform":"notifies","tense":"present","frame":"NP V VPing","sentence":"Someone notifies doing something.","responsenorm":-0.4961290359,"responsevar":-1.2981288878,"freq":1,"accbin":1,"freqbin":0,"frameclass":17,"itemid":19,"sentence_tokenized":["Someone","notifies","doing","something","."]},{"verb":"perplex","verbform":"perplexed","tense":"past_progressive","frame":"NP be V so","sentence":"Someone was being perplexed so.","responsenorm":-1.4340653419,"responsevar":-0.6518610644,"freq":17,"accbin":0,"freqbin":1,"frameclass":5,"itemid":20,"sentence_tokenized":["Someone","was","being","perplexed","so","."]},{"verb":"welcome","verbform":"welcomed","tense":"past_progressive","frame":"NP be V that S[+future]","sentence":"Someone was being welcomed that something would happen.","responsenorm":-1.0790618658,"responsevar":-0.5561556112,"freq":104,"accbin":0,"freqbin":2,"frameclass":11,"itemid":21,"sentence_tokenized":["Someone","was","being","welcomed","that","something","would","happen","."]},{"verb":"send","verbform":"sends","tense":"present","frame":"NP V to VP[+eventive]","sentence":"Someone sends to do something.","responsenorm":-1.6859643459,"responsevar":-1.1955487357,"freq":585,"accbin":0,"freqbin":3,"frameclass":4,"itemid":22,"sentence_tokenized":["Someone","sends","to","do","something","."]},{"verb":"hasten","verbform":"hastened","tense":"past","frame":"NP be V that S[-tense]","sentence":"Someone was hastened that something happen.","responsenorm":-1.0181225538,"responsevar":-1.1320589808,"freq":5,"accbin":0,"freqbin":0,"frameclass":21,"itemid":23,"sentence_tokenized":["Someone","was","hastened","that","something","happen","."]}]`;
+      json_items = jQuery.parseJSON(json_items);
+    } else {
+      // json_items = `${json}`;
+      //!!!!!!!!!!!!!!!!!!! LINE TO CHANGE
+      json_items = 
+      // [{"id": "roga-ask-partial-noctx-tw-0", "verb": "ask", "target_sent": "That's like asking whether a certain thing is true."}, {"id": "roga-examine-partial-noctx-tw-0", "verb": "examine", "target_sent": "We need to examine whether a certain thing happens."}, {"id": "roga-inquire-partial-noctx-tw-0", "verb": "inquire", "target_sent": "I inquired whether a certain thing had happened."}, {"id": "roga-investigate-partial-noctx-tw-0", "verb": "investigate", "target_sent": "You might want to investigate whether a certain thing is true."}, {"id": "roga-wonder-partial-noctx-tw-0", "verb": "wonder", "target_sent": "I've wondered whether a certain thing happened or another thing did."}, {"id": "resp-discover-partial-noctx-tw-0", "verb": "discover", "target_sent": "A group of people is trying to discover whether a certain thing was true."}, {"id": "resp-forget-partial-noctx-tw-0", "verb": "forget", "target_sent": "I forget whether a certain thing happened."}, {"id": "resp-know-partial-noctx-tw-0", "verb": "know", "target_sent": "I don't know whether a certain thing is true or not."}, {"id": "resp-realize-partial-noctx-tw-0", "verb": "realize", "target_sent": "You need to realize whether a certain thing is true or another thing is."}, {"id": "resp-remember-partial-noctx-tw-0", "verb": "remember", "target_sent": "I don't remember whether or not certain things happened."}, {"id": "anti-believe-partial-noctx-tw-0", "verb": "believe", "target_sent": "Not doing that is not the same thing as believing whether a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-tw-0", "verb": "fear", "target_sent": "They had to fear whether or not a certain thing would happen."}, {"id": "anti-hope-partial-noctx-tw-0", "verb": "hope", "target_sent": "I'm not sure to hope whether a certain thing is true or not."}, {"id": "anti-imagine-partial-noctx-tw-0", "verb": "imagine", "target_sent": "You don't have to imagine whether a certain thing is happening."}, {"id": "anti-think-partial-noctx-tw-0", "verb": "think", "target_sent": "When a topic is brought up, instead of thinking whether a certain thing is true, people do something else."}, {"id": "roga-ask-partial-noctx-tt-0", "verb": "ask", "target_sent": "I asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-0", "verb": "examine", "target_sent": "I've got to examine that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tt-0", "verb": "inquire", "target_sent": "He inquired that a certain thing is happening."}, {"id": "roga-investigate-partial-noctx-tt-0", "verb": "investigate", "target_sent": "It should be investigated that a certain thing was true."}, {"id": "roga-wonder-partial-noctx-tt-0", "verb": "wonder", "target_sent": "I wonder that a certain thing happened."}, {"id": "resp-discover-partial-noctx-tt-0", "verb": "discover", "target_sent": "She discovered that a certain thing was happening."}, {"id": "resp-forget-partial-noctx-tt-0", "verb": "forget", "target_sent": "People are forgetting that that a certain thing is true."}, {"id": "resp-know-partial-noctx-tt-0", "verb": "know", "target_sent": "They know that a certain thing is true."}, {"id": "resp-realize-partial-noctx-tt-0", "verb": "realize", "target_sent": "I realized that a certain thing happened."}, {"id": "resp-remember-partial-noctx-tt-0", "verb": "remember", "target_sent": "I remember that a certain thing happened."}, {"id": "anti-believe-partial-noctx-tt-0", "verb": "believe", "target_sent": "I believe that a certain thing is true."}, {"id": "anti-fear-partial-noctx-tt-0", "verb": "fear", "target_sent": "I fear that a certain thing will happen."}, {"id": "anti-hope-partial-noctx-tt-0", "verb": "hope", "target_sent": "I hope that a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tt-0", "verb": "imagine", "target_sent": "I would imagine that a certain thing would happen."}, {"id": "anti-think-partial-noctx-tt-0", "verb": "think", "target_sent": "I think that a certain thing is true."}, {"id": "roga-ask-partial-noctx-fw-1", "verb": "ask", "target_sent": "I asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-1", "verb": "examine", "target_sent": "They examine whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-fw-1", "verb": "inquire", "target_sent": "You might want to inquire whether a certain thing is happening."}, {"id": "roga-investigate-partial-noctx-fw-1", "verb": "investigate", "target_sent": "They investigated whether a certain thing was true."}, {"id": "roga-wonder-partial-noctx-fw-1", "verb": "wonder", "target_sent": "I tend to wonder whether a certain thing is true."}, {"id": "resp-discover-partial-noctx-fw-1", "verb": "discover", "target_sent": "He discovered whether a certain thing was true."}, {"id": "resp-forget-partial-noctx-fw-1", "verb": "forget", "target_sent": "Can't forget that whether a certain thing happens."}, {"id": "resp-know-partial-noctx-fw-1", "verb": "know", "target_sent": "I know whether a certain thing is true."}, {"id": "resp-realize-partial-noctx-fw-1", "verb": "realize", "target_sent": "You realize whether a certain thing happens."}, {"id": "resp-remember-partial-noctx-fw-1", "verb": "remember", "target_sent": "I remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-fw-1", "verb": "believe", "target_sent": "That's what led me to believe whether a certain thing is true."}, {"id": "anti-fear-partial-noctx-fw-1", "verb": "fear", "target_sent": "I fear whether a certain thing happened."}, {"id": "anti-hope-partial-noctx-fw-1", "verb": "hope", "target_sent": "I hoped whether a certain thing happened."}, {"id": "anti-imagine-partial-noctx-fw-1", "verb": "imagine", "target_sent": "I would imagine whether a certain thing could happen."}, {"id": "anti-think-partial-noctx-fw-1", "verb": "think", "target_sent": "I don't think whether a certain thing would happen."}, {"id": "roga-ask-partial-noctx-ft-1", "verb": "ask", "target_sent": "I've messaged him asking that a certain thing is true or another thing is."}, {"id": "roga-examine-partial-noctx-ft-1", "verb": "examine", "target_sent": "This might be the important factor to examine that a certain thing happens."}, {"id": "roga-inquire-partial-noctx-ft-1", "verb": "inquire", "target_sent": "Make sure you inquire that a certain thing should happen."}, {"id": "roga-investigate-partial-noctx-ft-1", "verb": "investigate", "target_sent": "We have people whose jobs are to investigate that a certain thing is true or not."}, {"id": "roga-wonder-partial-noctx-ft-1", "verb": "wonder", "target_sent": "I'm wondering that a certain thing was true or another thing was."}, {"id": "resp-discover-partial-noctx-ft-1", "verb": "discover", "target_sent": "You could discover that a certain thing happens or not."}, {"id": "resp-forget-partial-noctx-ft-1", "verb": "forget", "target_sent": "I would forget that a certain thing is true or another thing is."}, {"id": "resp-know-partial-noctx-ft-1", "verb": "know", "target_sent": "You don't know that a certain thing can happen."}, {"id": "resp-realize-partial-noctx-ft-1", "verb": "realize", "target_sent": "It is up to you to realize that a certain thing is true or not."}, {"id": "resp-remember-partial-noctx-ft-1", "verb": "remember", "target_sent": "I can't remember that a certain thing was true."}, {"id": "anti-believe-partial-noctx-ft-1", "verb": "believe", "target_sent": "You believe that a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-ft-1", "verb": "fear", "target_sent": "The only thing that keeps me from doing that is fearing that a certain thing is going to happen or another thing is."}, {"id": "anti-hope-partial-noctx-ft-1", "verb": "hope", "target_sent": "I am sitting here, hoping that a certain thing happened or not."}, {"id": "anti-imagine-partial-noctx-ft-1", "verb": "imagine", "target_sent": "She told me to imagine that a certain thing is true."}, {"id": "anti-think-partial-noctx-ft-1", "verb": "think", "target_sent": "I am thinking that a certain thing should happen or another thing should."}]
+      // [{"id": "roga-ask-partial-noctx-tw-1", "verb": "ask", "target_sent": "I've messaged him asking whether a certain thing is true or another thing is."}, {"id": "roga-examine-partial-noctx-tw-1", "verb": "examine", "target_sent": "This might be the important factor to examine whether a certain thing happens."}, {"id": "roga-inquire-partial-noctx-tw-1", "verb": "inquire", "target_sent": "Make sure you inquire whether a certain thing should happen."}, {"id": "roga-investigate-partial-noctx-tw-1", "verb": "investigate", "target_sent": "We have people whose jobs are to investigate whether or not a certain thing is true."}, {"id": "roga-wonder-partial-noctx-tw-1", "verb": "wonder", "target_sent": "I'm wondering whether a certain thing was true or another thing was."}, {"id": "resp-discover-partial-noctx-tw-1", "verb": "discover", "target_sent": "You could discover whether or not a certain thing happens."}, {"id": "resp-forget-partial-noctx-tw-1", "verb": "forget", "target_sent": "I would forget whether a certain thing is true or another thing is."}, {"id": "resp-know-partial-noctx-tw-1", "verb": "know", "target_sent": "You don't know whether a certain thing can happen."}, {"id": "resp-realize-partial-noctx-tw-1", "verb": "realize", "target_sent": "It is up to you to realize whether or not a certain thing is true."}, {"id": "resp-remember-partial-noctx-tw-1", "verb": "remember", "target_sent": "I can't remember whether or not a certain thing was true."}, {"id": "anti-believe-partial-noctx-tw-1", "verb": "believe", "target_sent": "You believe whether a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-tw-1", "verb": "fear", "target_sent": "The only thing that keeps me from doing that is fearing whether a certain thing is going to happen or another thing is."}, {"id": "anti-hope-partial-noctx-tw-1", "verb": "hope", "target_sent": "I am sitting here, hoping whether or not a certain thing happened."}, {"id": "anti-imagine-partial-noctx-tw-1", "verb": "imagine", "target_sent": "She told me to imagine whether a certain thing is true."}, {"id": "anti-think-partial-noctx-tw-1", "verb": "think", "target_sent": "I am thinking whether a certain thing should happen or another thing should."}, {"id": "roga-ask-partial-noctx-tt-1", "verb": "ask", "target_sent": "I asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-1", "verb": "examine", "target_sent": "They examine that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tt-1", "verb": "inquire", "target_sent": "You might want to inquire that a certain thing is happening."}, {"id": "roga-investigate-partial-noctx-tt-1", "verb": "investigate", "target_sent": "They investigated that a certain thing was true."}, {"id": "roga-wonder-partial-noctx-tt-1", "verb": "wonder", "target_sent": "I tend to wonder that a certain thing is true."}, {"id": "resp-discover-partial-noctx-tt-1", "verb": "discover", "target_sent": "He discovered that a certain thing was true."}, {"id": "resp-forget-partial-noctx-tt-1", "verb": "forget", "target_sent": "Can't forget that that a certain thing happens."}, {"id": "resp-know-partial-noctx-tt-1", "verb": "know", "target_sent": "I know that a certain thing is true."}, {"id": "resp-realize-partial-noctx-tt-1", "verb": "realize", "target_sent": "You realize that a certain thing happens."}, {"id": "resp-remember-partial-noctx-tt-1", "verb": "remember", "target_sent": "I remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-tt-1", "verb": "believe", "target_sent": "That's what led me to believe that a certain thing is true."}, {"id": "anti-fear-partial-noctx-tt-1", "verb": "fear", "target_sent": "I fear that a certain thing happened."}, {"id": "anti-hope-partial-noctx-tt-1", "verb": "hope", "target_sent": "I hoped that a certain thing happened."}, {"id": "anti-imagine-partial-noctx-tt-1", "verb": "imagine", "target_sent": "I would imagine that a certain thing could happen."}, {"id": "anti-think-partial-noctx-tt-1", "verb": "think", "target_sent": "I don't think that a certain thing would happen."}, {"id": "roga-ask-partial-noctx-fw-2", "verb": "ask", "target_sent": "I asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-2", "verb": "examine", "target_sent": "They examine whether a certain thing happened."}, {"id": "roga-inquire-partial-noctx-fw-2", "verb": "inquire", "target_sent": "I inquired whether a certain thing was happening."}, {"id": "roga-investigate-partial-noctx-fw-2", "verb": "investigate", "target_sent": "It's worth investigating whether a certain thing is true."}, {"id": "roga-wonder-partial-noctx-fw-2", "verb": "wonder", "target_sent": "I wonder whether a certain thing is true."}, {"id": "resp-discover-partial-noctx-fw-2", "verb": "discover", "target_sent": "I discovered whether a certain thing is true."}, {"id": "resp-forget-partial-noctx-fw-2", "verb": "forget", "target_sent": "She forgot whether a certain thing had happened."}, {"id": "resp-know-partial-noctx-fw-2", "verb": "know", "target_sent": "I know whether a certain thing would happen."}, {"id": "resp-realize-partial-noctx-fw-2", "verb": "realize", "target_sent": "I realize whether a certain thing is true."}, {"id": "resp-remember-partial-noctx-fw-2", "verb": "remember", "target_sent": "Try to remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-fw-2", "verb": "believe", "target_sent": "She seemed to believe whether a certain thing was true."}, {"id": "anti-fear-partial-noctx-fw-2", "verb": "fear", "target_sent": "We fear whether a certain thing will happen."}, {"id": "anti-hope-partial-noctx-fw-2", "verb": "hope", "target_sent": "I hope whether a certain thing happened."}, {"id": "anti-imagine-partial-noctx-fw-2", "verb": "imagine", "target_sent": "It's hard to imagine whether a certain thing would be true."}, {"id": "anti-think-partial-noctx-fw-2", "verb": "think", "target_sent": "It bugs me to think whether a certain thing is true."}, {"id": "roga-ask-partial-noctx-ft-2", "verb": "ask", "target_sent": "You will be asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-ft-2", "verb": "examine", "target_sent": "I requested something to examine that a certain thing will happen."}, {"id": "roga-inquire-partial-noctx-ft-2", "verb": "inquire", "target_sent": "You could inquire that a certain thing is true."}, {"id": "roga-investigate-partial-noctx-ft-2", "verb": "investigate", "target_sent": "You have to investigate that certain things are true."}, {"id": "roga-wonder-partial-noctx-ft-2", "verb": "wonder", "target_sent": "I wonder that a certain thing is true or another thing is."}, {"id": "resp-discover-partial-noctx-ft-2", "verb": "discover", "target_sent": "The main thing is for you to discover that a certain thing is true or not."}, {"id": "resp-forget-partial-noctx-ft-2", "verb": "forget", "target_sent": "I had forgotten that a certain thing was true or not."}, {"id": "resp-know-partial-noctx-ft-2", "verb": "know", "target_sent": "You don't need to do this to know that a certain thing is true."}, {"id": "resp-realize-partial-noctx-ft-2", "verb": "realize", "target_sent": "There is no time for him to realize that a certain thing is true."}, {"id": "resp-remember-partial-noctx-ft-2", "verb": "remember", "target_sent": "I don't remember that a certain thing happened."}, {"id": "anti-believe-partial-noctx-ft-2", "verb": "believe", "target_sent": "I have no idea to believe that a certain thing happened and whether another thing is true or not."}, {"id": "anti-fear-partial-noctx-ft-2", "verb": "fear", "target_sent": "They should be allowed to do this without fearing that a certain thing will even happen or not."}, {"id": "anti-hope-partial-noctx-ft-2", "verb": "hope", "target_sent": "You wouldn't have to hope that a certain thing happens or not."}, {"id": "anti-imagine-partial-noctx-ft-2", "verb": "imagine", "target_sent": "I do that in order to try to imagine that a certain thing is true or not."}, {"id": "anti-think-partial-noctx-ft-2", "verb": "think", "target_sent": "Think that a certain thing would be true."}]
+      [{"id": "roga-ask-partial-noctx-tw-2", "verb": "ask", "target_sent": "You will be asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-tw-2", "verb": "examine", "target_sent": "I requested something to examine whether a certain thing will happen."}, {"id": "roga-inquire-partial-noctx-tw-2", "verb": "inquire", "target_sent": "You could inquire whether a certain thing is true."}, {"id": "roga-investigate-partial-noctx-tw-2", "verb": "investigate", "target_sent": "You have to investigate whether certain things are true."}, {"id": "roga-wonder-partial-noctx-tw-2", "verb": "wonder", "target_sent": "I wonder whether a certain thing is true or another thing is."}, {"id": "resp-discover-partial-noctx-tw-2", "verb": "discover", "target_sent": "The main thing is for you to discover whether a certain thing is true or not."}, {"id": "resp-forget-partial-noctx-tw-2", "verb": "forget", "target_sent": "I had forgotten whether or not a certain thing was true."}, {"id": "resp-know-partial-noctx-tw-2", "verb": "know", "target_sent": "You don't need to do this to know whether or not a certain thing is true."}, {"id": "resp-realize-partial-noctx-tw-2", "verb": "realize", "target_sent": "There is no time for him to realize whether or not a certain thing is true."}, {"id": "resp-remember-partial-noctx-tw-2", "verb": "remember", "target_sent": "I don't remember whether or not a certain thing happened."}, {"id": "anti-believe-partial-noctx-tw-2", "verb": "believe", "target_sent": "I have no idea to believe whether a certain thing happened and whether another thing is true or not."}, {"id": "anti-fear-partial-noctx-tw-2", "verb": "fear", "target_sent": "They should be allowed to do this without fearing whether or not a certain thing will even happen."}, {"id": "anti-hope-partial-noctx-tw-2", "verb": "hope", "target_sent": "You wouldn't have to hope whether or not a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tw-2", "verb": "imagine", "target_sent": "I do that in order to try to imagine whether or not a certain thing is true."}, {"id": "anti-think-partial-noctx-tw-2", "verb": "think", "target_sent": "Think whether a certain thing would be true."}, {"id": "roga-ask-partial-noctx-tt-2", "verb": "ask", "target_sent": "I asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-2", "verb": "examine", "target_sent": "They examine that a certain thing happened."}, {"id": "roga-inquire-partial-noctx-tt-2", "verb": "inquire", "target_sent": "I inquired that a certain thing was happening."}, {"id": "roga-investigate-partial-noctx-tt-2", "verb": "investigate", "target_sent": "It's worth investigating that a certain thing is true."}, {"id": "roga-wonder-partial-noctx-tt-2", "verb": "wonder", "target_sent": "I wonder that a certain thing is true."}, {"id": "resp-discover-partial-noctx-tt-2", "verb": "discover", "target_sent": "I discovered that a certain thing is true."}, {"id": "resp-forget-partial-noctx-tt-2", "verb": "forget", "target_sent": "She forgot that a certain thing had happened."}, {"id": "resp-know-partial-noctx-tt-2", "verb": "know", "target_sent": "I know that a certain thing would happen."}, {"id": "resp-realize-partial-noctx-tt-2", "verb": "realize", "target_sent": "I realize that a certain thing is true."}, {"id": "resp-remember-partial-noctx-tt-2", "verb": "remember", "target_sent": "Try to remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-tt-2", "verb": "believe", "target_sent": "She seemed to believe that a certain thing was true."}, {"id": "anti-fear-partial-noctx-tt-2", "verb": "fear", "target_sent": "We fear that a certain thing will happen."}, {"id": "anti-hope-partial-noctx-tt-2", "verb": "hope", "target_sent": "I hope that a certain thing happened."}, {"id": "anti-imagine-partial-noctx-tt-2", "verb": "imagine", "target_sent": "It's hard to imagine that a certain thing would be true."}, {"id": "anti-think-partial-noctx-tt-2", "verb": "think", "target_sent": "It bugs me to think that a certain thing is true."}, {"id": "roga-ask-partial-noctx-fw-3", "verb": "ask", "target_sent": "I asked whether a certain thing was true."}, {"id": "roga-examine-partial-noctx-fw-3", "verb": "examine", "target_sent": "I want to examine whether a certain thing may be happening."}, {"id": "roga-inquire-partial-noctx-fw-3", "verb": "inquire", "target_sent": "It's safe to call her to inquire whether a certain thing has happened."}, {"id": "roga-investigate-partial-noctx-fw-3", "verb": "investigate", "target_sent": "We have to investigate whether a certain thing is true."}, {"id": "roga-wonder-partial-noctx-fw-3", "verb": "wonder", "target_sent": "I wonder whether a certain thing will be true."}, {"id": "resp-discover-partial-noctx-fw-3", "verb": "discover", "target_sent": "I discovered whether a certain thing happened."}, {"id": "resp-forget-partial-noctx-fw-3", "verb": "forget", "target_sent": "People tend to forget whether a certain thing is true."}, {"id": "resp-know-partial-noctx-fw-3", "verb": "know", "target_sent": "Do this knowing whether a certain thing happened and another thing is true."}, {"id": "resp-realize-partial-noctx-fw-3", "verb": "realize", "target_sent": "I realized whether a certain thing happens."}, {"id": "resp-remember-partial-noctx-fw-3", "verb": "remember", "target_sent": "I remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-fw-3", "verb": "believe", "target_sent": "I don't believe whether a certain thing is true."}, {"id": "anti-fear-partial-noctx-fw-3", "verb": "fear", "target_sent": "I fear whether a certain thing may happen."}, {"id": "anti-hope-partial-noctx-fw-3", "verb": "hope", "target_sent": "I hope whether a certain thing happens."}, {"id": "anti-imagine-partial-noctx-fw-3", "verb": "imagine", "target_sent": "I imagine whether a certain thing could happen."}, {"id": "anti-think-partial-noctx-fw-3", "verb": "think", "target_sent": "This isn't making anyone think whether a certain thing is true."}, {"id": "roga-ask-partial-noctx-ft-3", "verb": "ask", "target_sent": "You do not need to ask that a certain thing happens or another thing does."}, {"id": "roga-examine-partial-noctx-ft-3", "verb": "examine", "target_sent": "This will examine that a certain thing was true."}, {"id": "roga-inquire-partial-noctx-ft-3", "verb": "inquire", "target_sent": "I called to inquire that a certain thing had happened."}, {"id": "roga-investigate-partial-noctx-ft-3", "verb": "investigate", "target_sent": "They investigated that a certain thing was true."}, {"id": "roga-wonder-partial-noctx-ft-3", "verb": "wonder", "target_sent": "I do wonder that a certain thing is true or another thing is."}, {"id": "resp-discover-partial-noctx-ft-3", "verb": "discover", "target_sent": "You will discover that a certain thing is true or not."}, {"id": "resp-forget-partial-noctx-ft-3", "verb": "forget", "target_sent": "I'll still blank out sometimes, forgetting that a certain thing happened."}, {"id": "resp-know-partial-noctx-ft-3", "verb": "know", "target_sent": "I wanted to know that certain things were true or not."}, {"id": "resp-realize-partial-noctx-ft-3", "verb": "realize", "target_sent": "That is when I realize that a certain thing was true or not."}, {"id": "resp-remember-partial-noctx-ft-3", "verb": "remember", "target_sent": "I can't remember that a certain thing is true or not."}, {"id": "anti-believe-partial-noctx-ft-3", "verb": "believe", "target_sent": "It comes down to them believing that a certain thing is happening or not."}, {"id": "anti-fear-partial-noctx-ft-3", "verb": "fear", "target_sent": "I fear that a certain thing can happen or not."}, {"id": "anti-hope-partial-noctx-ft-3", "verb": "hope", "target_sent": "I was hoping that a certain thing can happen."}, {"id": "anti-imagine-partial-noctx-ft-3", "verb": "imagine", "target_sent": "Imagine that a certain thing would be true."}, {"id": "anti-think-partial-noctx-ft-3", "verb": "think", "target_sent": "Take time to yourself to think that a certain thing will happen."}]
+      // [{"id": "roga-ask-partial-noctx-tw-3", "verb": "ask", "target_sent": "You do not need to ask whether a certain thing happens or another thing does."}, {"id": "roga-examine-partial-noctx-tw-3", "verb": "examine", "target_sent": "This will examine whether a certain thing was true."}, {"id": "roga-inquire-partial-noctx-tw-3", "verb": "inquire", "target_sent": "I called to inquire whether a certain thing had happened."}, {"id": "roga-investigate-partial-noctx-tw-3", "verb": "investigate", "target_sent": "They investigated whether a certain thing was true."}, {"id": "roga-wonder-partial-noctx-tw-3", "verb": "wonder", "target_sent": "I do wonder whether a certain thing is true or another thing is."}, {"id": "resp-discover-partial-noctx-tw-3", "verb": "discover", "target_sent": "You will discover whether a certain thing is true or not."}, {"id": "resp-forget-partial-noctx-tw-3", "verb": "forget", "target_sent": "I'll still blank out sometimes, forgetting whether a certain thing happened."}, {"id": "resp-know-partial-noctx-tw-3", "verb": "know", "target_sent": "I wanted to know whether or not certain things were true."}, {"id": "resp-realize-partial-noctx-tw-3", "verb": "realize", "target_sent": "That is when I realize whether a certain thing was true or not."}, {"id": "resp-remember-partial-noctx-tw-3", "verb": "remember", "target_sent": "I can't remember whether a certain thing is true or not."}, {"id": "anti-believe-partial-noctx-tw-3", "verb": "believe", "target_sent": "It comes down to them believing whether or not a certain thing is happening."}, {"id": "anti-fear-partial-noctx-tw-3", "verb": "fear", "target_sent": "I fear whether or not a certain thing can happen."}, {"id": "anti-hope-partial-noctx-tw-3", "verb": "hope", "target_sent": "I was hoping whether a certain thing can happen."}, {"id": "anti-imagine-partial-noctx-tw-3", "verb": "imagine", "target_sent": "Imagine whether a certain thing would be true."}, {"id": "anti-think-partial-noctx-tw-3", "verb": "think", "target_sent": "Take time to yourself to think whether a certain thing will happen."}, {"id": "roga-ask-partial-noctx-tt-3", "verb": "ask", "target_sent": "I asked that a certain thing was true."}, {"id": "roga-examine-partial-noctx-tt-3", "verb": "examine", "target_sent": "I want to examine that a certain thing may be happening."}, {"id": "roga-inquire-partial-noctx-tt-3", "verb": "inquire", "target_sent": "It's safe to call her to inquire that a certain thing has happened."}, {"id": "roga-investigate-partial-noctx-tt-3", "verb": "investigate", "target_sent": "We have to investigate that a certain thing is true."}, {"id": "roga-wonder-partial-noctx-tt-3", "verb": "wonder", "target_sent": "I wonder that a certain thing will be true."}, {"id": "resp-discover-partial-noctx-tt-3", "verb": "discover", "target_sent": "I discovered that a certain thing happened."}, {"id": "resp-forget-partial-noctx-tt-3", "verb": "forget", "target_sent": "People tend to forget that a certain thing is true."}, {"id": "resp-know-partial-noctx-tt-3", "verb": "know", "target_sent": "Do this knowing that a certain thing happened and another thing is true."}, {"id": "resp-realize-partial-noctx-tt-3", "verb": "realize", "target_sent": "I realized that a certain thing happens."}, {"id": "resp-remember-partial-noctx-tt-3", "verb": "remember", "target_sent": "I remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-tt-3", "verb": "believe", "target_sent": "I don't believe that a certain thing is true."}, {"id": "anti-fear-partial-noctx-tt-3", "verb": "fear", "target_sent": "I fear that a certain thing may happen."}, {"id": "anti-hope-partial-noctx-tt-3", "verb": "hope", "target_sent": "I hope that a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tt-3", "verb": "imagine", "target_sent": "I imagine that a certain thing could happen."}, {"id": "anti-think-partial-noctx-tt-3", "verb": "think", "target_sent": "This isn't making anyone think that a certain thing is true."}, {"id": "roga-ask-partial-noctx-fw-4", "verb": "ask", "target_sent": "We asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-4", "verb": "examine", "target_sent": "She is there to examine whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-fw-4", "verb": "inquire", "target_sent": "I was inquiring whether a certain thing could be true."}, {"id": "roga-investigate-partial-noctx-fw-4", "verb": "investigate", "target_sent": "It would be easy to investigate whether a certain thing happens."}, {"id": "roga-wonder-partial-noctx-fw-4", "verb": "wonder", "target_sent": "I wonder whether a certain thing might be true."}, {"id": "resp-discover-partial-noctx-fw-4", "verb": "discover", "target_sent": "We discover whether a certain thing is true."}, {"id": "resp-forget-partial-noctx-fw-4", "verb": "forget", "target_sent": "Don't forget whether a certain thing is true."}, {"id": "resp-know-partial-noctx-fw-4", "verb": "know", "target_sent": "I know whether a certain thing would happen."}, {"id": "resp-realize-partial-noctx-fw-4", "verb": "realize", "target_sent": "She doesn't realize whether a certain thing happens."}, {"id": "resp-remember-partial-noctx-fw-4", "verb": "remember", "target_sent": "Remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-fw-4", "verb": "believe", "target_sent": "I believe whether a certain thing is true."}, {"id": "anti-fear-partial-noctx-fw-4", "verb": "fear", "target_sent": "I feared whether a certain thing would be true."}, {"id": "anti-hope-partial-noctx-fw-4", "verb": "hope", "target_sent": "I'm hoping whether a certain thing is true."}, {"id": "anti-imagine-partial-noctx-fw-4", "verb": "imagine", "target_sent": "I imagine whether a certain thing would happen."}, {"id": "anti-think-partial-noctx-fw-4", "verb": "think", "target_sent": "She might be thinking whether a certain thing is true."}, {"id": "roga-ask-partial-noctx-ft-4", "verb": "ask", "target_sent": "I was asking that a certain thing would be true."}, {"id": "roga-examine-partial-noctx-ft-4", "verb": "examine", "target_sent": "We need to examine that a certain thing can happen."}, {"id": "roga-inquire-partial-noctx-ft-4", "verb": "inquire", "target_sent": "Is it rude to inquire that a certain thing has happened or not?"}, {"id": "roga-investigate-partial-noctx-ft-4", "verb": "investigate", "target_sent": "We have to investigate that a certain thing is happening or not."}, {"id": "roga-wonder-partial-noctx-ft-4", "verb": "wonder", "target_sent": "I wonder that a certain thing was true or another thing was."}, {"id": "resp-discover-partial-noctx-ft-4", "verb": "discover", "target_sent": "People can use it to discover that certain things are true."}, {"id": "resp-forget-partial-noctx-ft-4", "verb": "forget", "target_sent": "I forget that a certain thing is true."}, {"id": "resp-know-partial-noctx-ft-4", "verb": "know", "target_sent": "You just don't know that a certain thing will happen."}, {"id": "resp-realize-partial-noctx-ft-4", "verb": "realize", "target_sent": "You need to take a serious look at these to realize that a certain thing is actually true or another thing is."}, {"id": "resp-remember-partial-noctx-ft-4", "verb": "remember", "target_sent": "I can't remember that a certain thing happens."}, {"id": "anti-believe-partial-noctx-ft-4", "verb": "believe", "target_sent": "I believe that a certain thing is true."}, {"id": "anti-fear-partial-noctx-ft-4", "verb": "fear", "target_sent": "He began to fear that a certain thing had been happening."}, {"id": "anti-hope-partial-noctx-ft-4", "verb": "hope", "target_sent": "Let's hope that a certain thing happens."}, {"id": "anti-imagine-partial-noctx-ft-4", "verb": "imagine", "target_sent": "Try to imagine that a certain thing would happen."}, {"id": "anti-think-partial-noctx-ft-4", "verb": "think", "target_sent": "I waited for some time thinking that a certain thing should happen."}]
+      // [{"id": "roga-ask-partial-noctx-tw-4", "verb": "ask", "target_sent": "I was asking whether a certain thing would be true."}, {"id": "roga-examine-partial-noctx-tw-4", "verb": "examine", "target_sent": "We need to examine whether a certain thing can happen."}, {"id": "roga-inquire-partial-noctx-tw-4", "verb": "inquire", "target_sent": "Is it rude to inquire whether or not a certain thing has happened?"}, {"id": "roga-investigate-partial-noctx-tw-4", "verb": "investigate", "target_sent": "We have to investigate whether or not a certain thing is happening."}, {"id": "roga-wonder-partial-noctx-tw-4", "verb": "wonder", "target_sent": "I wonder whether a certain thing was true or another thing was."}, {"id": "resp-discover-partial-noctx-tw-4", "verb": "discover", "target_sent": "People can use it to discover whether or not certain things are true."}, {"id": "resp-forget-partial-noctx-tw-4", "verb": "forget", "target_sent": "I forget whether a certain thing is true."}, {"id": "resp-know-partial-noctx-tw-4", "verb": "know", "target_sent": "You just don't know whether a certain thing will happen."}, {"id": "resp-realize-partial-noctx-tw-4", "verb": "realize", "target_sent": "You need to take a serious look at these to realize whether a certain thing is actually true or another thing is."}, {"id": "resp-remember-partial-noctx-tw-4", "verb": "remember", "target_sent": "I can't remember whether a certain thing happens."}, {"id": "anti-believe-partial-noctx-tw-4", "verb": "believe", "target_sent": "I believe whether a certain thing is true."}, {"id": "anti-fear-partial-noctx-tw-4", "verb": "fear", "target_sent": "He began to fear whether a certain thing had been happening."}, {"id": "anti-hope-partial-noctx-tw-4", "verb": "hope", "target_sent": "Let's hope whether a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tw-4", "verb": "imagine", "target_sent": "Try to imagine whether a certain thing would happen."}, {"id": "anti-think-partial-noctx-tw-4", "verb": "think", "target_sent": "I waited for some time thinking whether a certain thing should happen."}, {"id": "roga-ask-partial-noctx-tt-4", "verb": "ask", "target_sent": "We asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-4", "verb": "examine", "target_sent": "She is there to examine that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tt-4", "verb": "inquire", "target_sent": "I was inquiring that a certain thing could be true."}, {"id": "roga-investigate-partial-noctx-tt-4", "verb": "investigate", "target_sent": "It would be easy to investigate that a certain thing happens."}, {"id": "roga-wonder-partial-noctx-tt-4", "verb": "wonder", "target_sent": "I wonder that a certain thing might be true."}, {"id": "resp-discover-partial-noctx-tt-4", "verb": "discover", "target_sent": "We discover that a certain thing is true."}, {"id": "resp-forget-partial-noctx-tt-4", "verb": "forget", "target_sent": "Don't forget that a certain thing is true."}, {"id": "resp-know-partial-noctx-tt-4", "verb": "know", "target_sent": "I know that a certain thing would happen."}, {"id": "resp-realize-partial-noctx-tt-4", "verb": "realize", "target_sent": "She doesn't realize that a certain thing happens."}, {"id": "resp-remember-partial-noctx-tt-4", "verb": "remember", "target_sent": "Remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-tt-4", "verb": "believe", "target_sent": "I believe that a certain thing is true."}, {"id": "anti-fear-partial-noctx-tt-4", "verb": "fear", "target_sent": "I feared that a certain thing would be true."}, {"id": "anti-hope-partial-noctx-tt-4", "verb": "hope", "target_sent": "I'm hoping that a certain thing is true."}, {"id": "anti-imagine-partial-noctx-tt-4", "verb": "imagine", "target_sent": "I imagine that a certain thing would happen."}, {"id": "anti-think-partial-noctx-tt-4", "verb": "think", "target_sent": "She might be thinking that a certain thing is true."}, {"id": "roga-ask-partial-noctx-fw-5", "verb": "ask", "target_sent": "I asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-5", "verb": "examine", "target_sent": "He is willing to examine whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-fw-5", "verb": "inquire", "target_sent": "I did inquire whether a certain thing can happen."}, {"id": "roga-investigate-partial-noctx-fw-5", "verb": "investigate", "target_sent": "I investigated whether a certain thing never happened."}, {"id": "roga-wonder-partial-noctx-fw-5", "verb": "wonder", "target_sent": "I wonder whether a certain thing is true."}, {"id": "resp-discover-partial-noctx-fw-5", "verb": "discover", "target_sent": "I have discovered whether a certain thing happens."}, {"id": "resp-forget-partial-noctx-fw-5", "verb": "forget", "target_sent": "They seemed to forget whether a certain thing was true."}, {"id": "resp-know-partial-noctx-fw-5", "verb": "know", "target_sent": "We all know whether a certain thingis true."}, {"id": "resp-realize-partial-noctx-fw-5", "verb": "realize", "target_sent": "You'll realize whether a certain thing will be true."}, {"id": "resp-remember-partial-noctx-fw-5", "verb": "remember", "target_sent": "We have to remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-fw-5", "verb": "believe", "target_sent": "We believe whether a certain thing is true."}, {"id": "anti-fear-partial-noctx-fw-5", "verb": "fear", "target_sent": "I fear whether a certain thing might happen."}, {"id": "anti-hope-partial-noctx-fw-5", "verb": "hope", "target_sent": "I hope whether a certain thing happens."}, {"id": "anti-imagine-partial-noctx-fw-5", "verb": "imagine", "target_sent": "I never imagined whether a certain thing would be true."}, {"id": "anti-think-partial-noctx-fw-5", "verb": "think", "target_sent": "I don't think whether a certain thing happens."}, {"id": "roga-ask-partial-noctx-ft-5", "verb": "ask", "target_sent": "I spent some time with multiple people asking that a certain thing had happened."}, {"id": "roga-examine-partial-noctx-ft-5", "verb": "examine", "target_sent": "You need to examine that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-ft-5", "verb": "inquire", "target_sent": "I was just inquiring that a certain thing is true."}, {"id": "roga-investigate-partial-noctx-ft-5", "verb": "investigate", "target_sent": "I don't know how common it is for them to investigate that a certain thing happened or not."}, {"id": "roga-wonder-partial-noctx-ft-5", "verb": "wonder", "target_sent": "I wonder that a certain thing was true."}, {"id": "resp-discover-partial-noctx-ft-5", "verb": "discover", "target_sent": "What I do is discover that a certain thing is true."}, {"id": "resp-forget-partial-noctx-ft-5", "verb": "forget", "target_sent": "I forgot that a certain thing happened."}, {"id": "resp-know-partial-noctx-ft-5", "verb": "know", "target_sent": "I don't know that a certain thing is true or another thing is."}, {"id": "resp-realize-partial-noctx-ft-5", "verb": "realize", "target_sent": "It always takes me some time to realize that a certain thing is true or another thing is."}, {"id": "resp-remember-partial-noctx-ft-5", "verb": "remember", "target_sent": "I'm having trouble remembering that a certain thing was true."}, {"id": "anti-believe-partial-noctx-ft-5", "verb": "believe", "target_sent": "I dont believe that a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-ft-5", "verb": "fear", "target_sent": "Your reasoning for doing this is rooted in fearing that a certain thing is true or not."}, {"id": "anti-hope-partial-noctx-ft-5", "verb": "hope", "target_sent": "I was hoping that a certain thing could happen."}, {"id": "anti-imagine-partial-noctx-ft-5", "verb": "imagine", "target_sent": "I'm struggling to imagine that a certain thing would happen."}, {"id": "anti-think-partial-noctx-ft-5", "verb": "think", "target_sent": "Made me think that a certain thing is true or another thing is."}]
+      // [{"id": "roga-ask-partial-noctx-tw-5", "verb": "ask", "target_sent": "I spent some time with multiple people asking whether a certain thing had happened."}, {"id": "roga-examine-partial-noctx-tw-5", "verb": "examine", "target_sent": "You need to examine whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tw-5", "verb": "inquire", "target_sent": "I was just inquiring whether a certain thing is true."}, {"id": "roga-investigate-partial-noctx-tw-5", "verb": "investigate", "target_sent": "I don't know how common it is for them to investigate whether or not a certain thing happened."}, {"id": "roga-wonder-partial-noctx-tw-5", "verb": "wonder", "target_sent": "I wonder whether a certain thing was true."}, {"id": "resp-discover-partial-noctx-tw-5", "verb": "discover", "target_sent": "What I do is discover whether a certain thing is true."}, {"id": "resp-forget-partial-noctx-tw-5", "verb": "forget", "target_sent": "I forgot whether a certain thing happened."}, {"id": "resp-know-partial-noctx-tw-5", "verb": "know", "target_sent": "I don't know whether a certain thing is true or another thing is."}, {"id": "resp-realize-partial-noctx-tw-5", "verb": "realize", "target_sent": "It always takes me some time to realize whether a certain thing is true or another thing is."}, {"id": "resp-remember-partial-noctx-tw-5", "verb": "remember", "target_sent": "I'm having trouble remembering whether a certain thing was true."}, {"id": "anti-believe-partial-noctx-tw-5", "verb": "believe", "target_sent": "I dont believe whether a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-tw-5", "verb": "fear", "target_sent": "Your reasoning for doing this is rooted in fearing whether or not a certain thing is true."}, {"id": "anti-hope-partial-noctx-tw-5", "verb": "hope", "target_sent": "I was hoping whether a certain thing could happen."}, {"id": "anti-imagine-partial-noctx-tw-5", "verb": "imagine", "target_sent": "I'm struggling to imagine whether a certain thing would happen."}, {"id": "anti-think-partial-noctx-tw-5", "verb": "think", "target_sent": "Made me think whether a certain thing is true or another thing is."}, {"id": "roga-ask-partial-noctx-tt-5", "verb": "ask", "target_sent": "I asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-5", "verb": "examine", "target_sent": "He is willing to examine that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tt-5", "verb": "inquire", "target_sent": "I did inquire that a certain thing can happen."}, {"id": "roga-investigate-partial-noctx-tt-5", "verb": "investigate", "target_sent": "I investigated that a certain thing never happened."}, {"id": "roga-wonder-partial-noctx-tt-5", "verb": "wonder", "target_sent": "I wonder that a certain thing is true."}, {"id": "resp-discover-partial-noctx-tt-5", "verb": "discover", "target_sent": "I have discovered that a certain thing happens."}, {"id": "resp-forget-partial-noctx-tt-5", "verb": "forget", "target_sent": "They seemed to forget that a certain thing was true."}, {"id": "resp-know-partial-noctx-tt-5", "verb": "know", "target_sent": "We all know that a certain thingis true."}, {"id": "resp-realize-partial-noctx-tt-5", "verb": "realize", "target_sent": "You'll realize that a certain thing will be true."}, {"id": "resp-remember-partial-noctx-tt-5", "verb": "remember", "target_sent": "We have to remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-tt-5", "verb": "believe", "target_sent": "We believe that a certain thing is true."}, {"id": "anti-fear-partial-noctx-tt-5", "verb": "fear", "target_sent": "I fear that a certain thing might happen."}, {"id": "anti-hope-partial-noctx-tt-5", "verb": "hope", "target_sent": "I hope that a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tt-5", "verb": "imagine", "target_sent": "I never imagined that a certain thing would be true."}, {"id": "anti-think-partial-noctx-tt-5", "verb": "think", "target_sent": "I don't think that a certain thing happens."}, {"id": "roga-ask-partial-noctx-fw-6", "verb": "ask", "target_sent": "She asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-6", "verb": "examine", "target_sent": "Examine whether a certain thing could happen."}, {"id": "roga-inquire-partial-noctx-fw-6", "verb": "inquire", "target_sent": "Inquiring whether a certain thing is true is a bad thing."}, {"id": "roga-investigate-partial-noctx-fw-6", "verb": "investigate", "target_sent": "Has she investigated whether a certain thing is happening?"}, {"id": "roga-wonder-partial-noctx-fw-6", "verb": "wonder", "target_sent": "I wondered whether a certain thing was true."}, {"id": "resp-discover-partial-noctx-fw-6", "verb": "discover", "target_sent": "They discover whether a certain thing is true."}, {"id": "resp-forget-partial-noctx-fw-6", "verb": "forget", "target_sent": "You forget whether a certain thing happened."}, {"id": "resp-know-partial-noctx-fw-6", "verb": "know", "target_sent": "Know whether a certain thing happens."}, {"id": "resp-realize-partial-noctx-fw-6", "verb": "realize", "target_sent": "I'm here to help people realize whether a certain thing is true."}, {"id": "resp-remember-partial-noctx-fw-6", "verb": "remember", "target_sent": "Remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-fw-6", "verb": "believe", "target_sent": "I believe whether a certain thing should happen."}, {"id": "anti-fear-partial-noctx-fw-6", "verb": "fear", "target_sent": "I fear whether a certain thing will happen."}, {"id": "anti-hope-partial-noctx-fw-6", "verb": "hope", "target_sent": "I hope whether a certain thing can happen."}, {"id": "anti-imagine-partial-noctx-fw-6", "verb": "imagine", "target_sent": "I'm having trouble imagining whether a certain thing is true."}, {"id": "anti-think-partial-noctx-fw-6", "verb": "think", "target_sent": "I think whether a certain thing should be true."}, {"id": "roga-ask-partial-noctx-ft-6", "verb": "ask", "target_sent": "I asked that a certain thing could happen."}, {"id": "roga-examine-partial-noctx-ft-6", "verb": "examine", "target_sent": "We can examine that certain things would happen."}, {"id": "roga-inquire-partial-noctx-ft-6", "verb": "inquire", "target_sent": "I emailed to inquire that a certain thing was true."}, {"id": "roga-investigate-partial-noctx-ft-6", "verb": "investigate", "target_sent": "The intention of this was to investigate that a certain thing was true."}, {"id": "roga-wonder-partial-noctx-ft-6", "verb": "wonder", "target_sent": "I wonder that a certain thing was true."}, {"id": "resp-discover-partial-noctx-ft-6", "verb": "discover", "target_sent": "He would seek to discover that a certain thing had happened."}, {"id": "resp-forget-partial-noctx-ft-6", "verb": "forget", "target_sent": "I forget that a certain thing happened or another thing did."}, {"id": "resp-know-partial-noctx-ft-6", "verb": "know", "target_sent": "This lets you know that a certain thing is true or not."}, {"id": "resp-realize-partial-noctx-ft-6", "verb": "realize", "target_sent": "You'll realize that a certain thing would be true or not."}, {"id": "resp-remember-partial-noctx-ft-6", "verb": "remember", "target_sent": "He isn't going to remember that a certain thing happened or not."}, {"id": "anti-believe-partial-noctx-ft-6", "verb": "believe", "target_sent": "It's on everyone to believe that a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-ft-6", "verb": "fear", "target_sent": "Do that instead of fearing that a certain thing will happen."}, {"id": "anti-hope-partial-noctx-ft-6", "verb": "hope", "target_sent": "I am just hoping that a certain thing can happen."}, {"id": "anti-imagine-partial-noctx-ft-6", "verb": "imagine", "target_sent": "All I do is imagine that a certain thing would be true or not."}, {"id": "anti-think-partial-noctx-ft-6", "verb": "think", "target_sent": "Starting to think that a certain thing is true."}]
+      // [{"id": "roga-ask-partial-noctx-tw-6", "verb": "ask", "target_sent": "I asked whether a certain thing could happen."}, {"id": "roga-examine-partial-noctx-tw-6", "verb": "examine", "target_sent": "We can examine whether certain things would happen."}, {"id": "roga-inquire-partial-noctx-tw-6", "verb": "inquire", "target_sent": "I emailed to inquire whether a certain thing was true."}, {"id": "roga-investigate-partial-noctx-tw-6", "verb": "investigate", "target_sent": "The intention of this was to investigate whether a certain thing was true."}, {"id": "roga-wonder-partial-noctx-tw-6", "verb": "wonder", "target_sent": "I wonder whether a certain thing was true."}, {"id": "resp-discover-partial-noctx-tw-6", "verb": "discover", "target_sent": "He would seek to discover whether a certain thing had happened."}, {"id": "resp-forget-partial-noctx-tw-6", "verb": "forget", "target_sent": "I forget whether a certain thing happened or another thing did."}, {"id": "resp-know-partial-noctx-tw-6", "verb": "know", "target_sent": "This lets you know whether a certain thing is true or not."}, {"id": "resp-realize-partial-noctx-tw-6", "verb": "realize", "target_sent": "You'll realize whether or not a certain thing would be true."}, {"id": "resp-remember-partial-noctx-tw-6", "verb": "remember", "target_sent": "He isn't going to remember whether a certain thing happened or not."}, {"id": "anti-believe-partial-noctx-tw-6", "verb": "believe", "target_sent": "It's on everyone to believe whether a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-tw-6", "verb": "fear", "target_sent": "Do that instead of fearing whether a certain thing will happen."}, {"id": "anti-hope-partial-noctx-tw-6", "verb": "hope", "target_sent": "I am just hoping whether a certain thing can happen."}, {"id": "anti-imagine-partial-noctx-tw-6", "verb": "imagine", "target_sent": "All I do is imagine whether a certain thing would be true or not."}, {"id": "anti-think-partial-noctx-tw-6", "verb": "think", "target_sent": "Starting to think whether a certain thing is true."}, {"id": "roga-ask-partial-noctx-tt-6", "verb": "ask", "target_sent": "She asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-6", "verb": "examine", "target_sent": "Examine that a certain thing could happen."}, {"id": "roga-inquire-partial-noctx-tt-6", "verb": "inquire", "target_sent": "Inquiring that a certain thing is true is a bad thing."}, {"id": "roga-investigate-partial-noctx-tt-6", "verb": "investigate", "target_sent": "Has she investigated that a certain thing is happening?"}, {"id": "roga-wonder-partial-noctx-tt-6", "verb": "wonder", "target_sent": "I wondered that a certain thing was true."}, {"id": "resp-discover-partial-noctx-tt-6", "verb": "discover", "target_sent": "They discover that a certain thing is true."}, {"id": "resp-forget-partial-noctx-tt-6", "verb": "forget", "target_sent": "You forget that a certain thing happened."}, {"id": "resp-know-partial-noctx-tt-6", "verb": "know", "target_sent": "Know that a certain thing happens."}, {"id": "resp-realize-partial-noctx-tt-6", "verb": "realize", "target_sent": "I'm here to help people realize that a certain thing is true."}, {"id": "resp-remember-partial-noctx-tt-6", "verb": "remember", "target_sent": "Remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-tt-6", "verb": "believe", "target_sent": "I believe that a certain thing should happen."}, {"id": "anti-fear-partial-noctx-tt-6", "verb": "fear", "target_sent": "I fear that a certain thing will happen."}, {"id": "anti-hope-partial-noctx-tt-6", "verb": "hope", "target_sent": "I hope that a certain thing can happen."}, {"id": "anti-imagine-partial-noctx-tt-6", "verb": "imagine", "target_sent": "I'm having trouble imagining that a certain thing is true."}, {"id": "anti-think-partial-noctx-tt-6", "verb": "think", "target_sent": "I think that a certain thing should be true."}, {"id": "roga-ask-partial-noctx-fw-7", "verb": "ask", "target_sent": "She asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-7", "verb": "examine", "target_sent": "It's easy to not examine whether a certain thing might've happened."}, {"id": "roga-inquire-partial-noctx-fw-7", "verb": "inquire", "target_sent": "She inquires whether a certain thing should happen."}, {"id": "roga-investigate-partial-noctx-fw-7", "verb": "investigate", "target_sent": "I do think it's worth investigating whether a certain thing was true. and that another thing was."}, {"id": "roga-wonder-partial-noctx-fw-7", "verb": "wonder", "target_sent": "I wondered whether a certain thing happened."}, {"id": "resp-discover-partial-noctx-fw-7", "verb": "discover", "target_sent": "I discovered whether a certain thing was true."}, {"id": "resp-forget-partial-noctx-fw-7", "verb": "forget", "target_sent": "Don't forget whether a certain thing is true."}, {"id": "resp-know-partial-noctx-fw-7", "verb": "know", "target_sent": "We know whether a certain thing happens."}, {"id": "resp-realize-partial-noctx-fw-7", "verb": "realize", "target_sent": "He realized whether a certain thing was true."}, {"id": "resp-remember-partial-noctx-fw-7", "verb": "remember", "target_sent": "It's important to remember whether a certain thing has happened."}, {"id": "anti-believe-partial-noctx-fw-7", "verb": "believe", "target_sent": "They neglect to believe whether a certain thing is true."}, {"id": "anti-fear-partial-noctx-fw-7", "verb": "fear", "target_sent": "I fear whether a certain thing will happen."}, {"id": "anti-hope-partial-noctx-fw-7", "verb": "hope", "target_sent": "I hope whether a certain thing happens."}, {"id": "anti-imagine-partial-noctx-fw-7", "verb": "imagine", "target_sent": "You could imagine whether a certain thing happens."}, {"id": "anti-think-partial-noctx-fw-7", "verb": "think", "target_sent": "A lot of people think whether a certain thing is true."}, {"id": "roga-ask-partial-noctx-ft-7", "verb": "ask", "target_sent": "We were asked that a certain thing was true."}, {"id": "roga-examine-partial-noctx-ft-7", "verb": "examine", "target_sent": "Examine that a certain thing can happen."}, {"id": "roga-inquire-partial-noctx-ft-7", "verb": "inquire", "target_sent": "They have no business inquiring that a certain thing is true or not."}, {"id": "roga-investigate-partial-noctx-ft-7", "verb": "investigate", "target_sent": "He had been requested by the group to investigate that a certain thing had been happening."}, {"id": "roga-wonder-partial-noctx-ft-7", "verb": "wonder", "target_sent": "I keep wondering that a certain thing is true."}, {"id": "resp-discover-partial-noctx-ft-7", "verb": "discover", "target_sent": "I look forward to discovering that a certain thing happens or another thing does."}, {"id": "resp-forget-partial-noctx-ft-7", "verb": "forget", "target_sent": "I forget that a certain thing is true or another thing is."}, {"id": "resp-know-partial-noctx-ft-7", "verb": "know", "target_sent": "I don't know that a certain thing is happening."}, {"id": "resp-realize-partial-noctx-ft-7", "verb": "realize", "target_sent": "First step is to realize that a certain thing is true."}, {"id": "resp-remember-partial-noctx-ft-7", "verb": "remember", "target_sent": "I can't remember that a certain thing was true or not."}, {"id": "anti-believe-partial-noctx-ft-7", "verb": "believe", "target_sent": "You have a choice to believe that certain things are true or not."}, {"id": "anti-fear-partial-noctx-ft-7", "verb": "fear", "target_sent": "There is no need to fear that a certain thing will happen."}, {"id": "anti-hope-partial-noctx-ft-7", "verb": "hope", "target_sent": "I'm torn between hoping that a certain thing happens."}, {"id": "anti-imagine-partial-noctx-ft-7", "verb": "imagine", "target_sent": "It's up to you to imagine that a certain thing happened or not."}, {"id": "anti-think-partial-noctx-ft-7", "verb": "think", "target_sent": "They never stop to think that a certain thing is true or not."}]
+      // [{"id": "roga-ask-partial-noctx-tw-7", "verb": "ask", "target_sent": "We were asked whether a certain thing was true."}, {"id": "roga-examine-partial-noctx-tw-7", "verb": "examine", "target_sent": "Examine whether a certain thing can happen."}, {"id": "roga-inquire-partial-noctx-tw-7", "verb": "inquire", "target_sent": "They have no business inquiring whether or not a certain thing is true."}, {"id": "roga-investigate-partial-noctx-tw-7", "verb": "investigate", "target_sent": "He had been requested by the group to investigate whether a certain thing had been happening."}, {"id": "roga-wonder-partial-noctx-tw-7", "verb": "wonder", "target_sent": "I keep wondering whether a certain thing is true."}, {"id": "resp-discover-partial-noctx-tw-7", "verb": "discover", "target_sent": "I look forward to discovering whether a certain thing happens or another thing does."}, {"id": "resp-forget-partial-noctx-tw-7", "verb": "forget", "target_sent": "I forget whether a certain thing is true or another thing is."}, {"id": "resp-know-partial-noctx-tw-7", "verb": "know", "target_sent": "I don't know whether a certain thing is happening."}, {"id": "resp-realize-partial-noctx-tw-7", "verb": "realize", "target_sent": "First step is to realize whether a certain thing is true."}, {"id": "resp-remember-partial-noctx-tw-7", "verb": "remember", "target_sent": "I can't remember whether a certain thing was true or not."}, {"id": "anti-believe-partial-noctx-tw-7", "verb": "believe", "target_sent": "You have a choice to believe whether or not certain things are true."}, {"id": "anti-fear-partial-noctx-tw-7", "verb": "fear", "target_sent": "There is no need to fear whether a certain thing will happen."}, {"id": "anti-hope-partial-noctx-tw-7", "verb": "hope", "target_sent": "I'm torn between hoping whether a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tw-7", "verb": "imagine", "target_sent": "It's up to you to imagine whether or not a certain thing happened."}, {"id": "anti-think-partial-noctx-tw-7", "verb": "think", "target_sent": "They never stop to think whether or not a certain thing is true."}, {"id": "roga-ask-partial-noctx-tt-7", "verb": "ask", "target_sent": "She asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-7", "verb": "examine", "target_sent": "It's easy to not examine that a certain thing might've happened."}, {"id": "roga-inquire-partial-noctx-tt-7", "verb": "inquire", "target_sent": "She inquires that a certain thing should happen."}, {"id": "roga-investigate-partial-noctx-tt-7", "verb": "investigate", "target_sent": "I do think it's worth investigating that a certain thing was true. and that another thing was."}, {"id": "roga-wonder-partial-noctx-tt-7", "verb": "wonder", "target_sent": "I wondered that a certain thing happened."}, {"id": "resp-discover-partial-noctx-tt-7", "verb": "discover", "target_sent": "I discovered that a certain thing was true."}, {"id": "resp-forget-partial-noctx-tt-7", "verb": "forget", "target_sent": "Don't forget that a certain thing is true."}, {"id": "resp-know-partial-noctx-tt-7", "verb": "know", "target_sent": "We know that a certain thing happens."}, {"id": "resp-realize-partial-noctx-tt-7", "verb": "realize", "target_sent": "He realized that a certain thing was true."}, {"id": "resp-remember-partial-noctx-tt-7", "verb": "remember", "target_sent": "It's important to remember that a certain thing has happened."}, {"id": "anti-believe-partial-noctx-tt-7", "verb": "believe", "target_sent": "They neglect to believe that a certain thing is true."}, {"id": "anti-fear-partial-noctx-tt-7", "verb": "fear", "target_sent": "I fear that a certain thing will happen."}, {"id": "anti-hope-partial-noctx-tt-7", "verb": "hope", "target_sent": "I hope that a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tt-7", "verb": "imagine", "target_sent": "You could imagine that a certain thing happens."}, {"id": "anti-think-partial-noctx-tt-7", "verb": "think", "target_sent": "A lot of people think that a certain thing is true."}, {"id": "roga-ask-partial-noctx-fw-8", "verb": "ask", "target_sent": "I asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-8", "verb": "examine", "target_sent": "It's good that you examined whether a certain thing might be true."}, {"id": "roga-inquire-partial-noctx-fw-8", "verb": "inquire", "target_sent": "I had him inquire whether a certain thing happened and that another thing did."}, {"id": "roga-investigate-partial-noctx-fw-8", "verb": "investigate", "target_sent": "They may investigate whether a certain thing is true."}, {"id": "roga-wonder-partial-noctx-fw-8", "verb": "wonder", "target_sent": "I wondered whether a certain thing would happen."}, {"id": "resp-discover-partial-noctx-fw-8", "verb": "discover", "target_sent": "I discovered whether a certain thing was true."}, {"id": "resp-forget-partial-noctx-fw-8", "verb": "forget", "target_sent": "Someone had forgotten whether a certain thing is true."}, {"id": "resp-know-partial-noctx-fw-8", "verb": "know", "target_sent": "I let him know whether a certain thing happened."}, {"id": "resp-realize-partial-noctx-fw-8", "verb": "realize", "target_sent": "You don't realize whether a certain thing is true."}, {"id": "resp-remember-partial-noctx-fw-8", "verb": "remember", "target_sent": "It's important to remember whether a certain thing will happen."}, {"id": "anti-believe-partial-noctx-fw-8", "verb": "believe", "target_sent": "We can believe whether a certain thing happened."}, {"id": "anti-fear-partial-noctx-fw-8", "verb": "fear", "target_sent": "I fear that whether a certain thing will happen."}, {"id": "anti-hope-partial-noctx-fw-8", "verb": "hope", "target_sent": "I hope whether a certain thing would happen."}, {"id": "anti-imagine-partial-noctx-fw-8", "verb": "imagine", "target_sent": "I can imagine whether a certain thing is true."}, {"id": "anti-think-partial-noctx-fw-8", "verb": "think", "target_sent": "I think whether a certain thing happens."}, {"id": "roga-ask-partial-noctx-ft-8", "verb": "ask", "target_sent": "Let's ask that a certain thing is true or not."}, {"id": "roga-examine-partial-noctx-ft-8", "verb": "examine", "target_sent": "Examine that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-ft-8", "verb": "inquire", "target_sent": "We have a message inquiring that a certain thing happened."}, {"id": "roga-investigate-partial-noctx-ft-8", "verb": "investigate", "target_sent": "They have to investigate that a certain thing was true."}, {"id": "roga-wonder-partial-noctx-ft-8", "verb": "wonder", "target_sent": "I'm wondering that a certain thing will happen."}, {"id": "resp-discover-partial-noctx-ft-8", "verb": "discover", "target_sent": "There wasn't time for him to discover that a certain thing was true or not."}, {"id": "resp-forget-partial-noctx-ft-8", "verb": "forget", "target_sent": "I'm sure I'd do that by forgetting that a certain thing had happened or not."}, {"id": "resp-know-partial-noctx-ft-8", "verb": "know", "target_sent": "You do not know that a certain thing is happening or not."}, {"id": "resp-realize-partial-noctx-ft-8", "verb": "realize", "target_sent": "You will realize that a certain thing is true or not."}, {"id": "resp-remember-partial-noctx-ft-8", "verb": "remember", "target_sent": "I don't remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-ft-8", "verb": "believe", "target_sent": "They believe that a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-ft-8", "verb": "fear", "target_sent": "I feared that a certain thing would be true."}, {"id": "anti-hope-partial-noctx-ft-8", "verb": "hope", "target_sent": "I hoped that a certain thing would happen."}, {"id": "anti-imagine-partial-noctx-ft-8", "verb": "imagine", "target_sent": "I'm trying to imagine that a certain thing is true."}, {"id": "anti-think-partial-noctx-ft-8", "verb": "think", "target_sent": "You should start to think that a certain thing is true."}]
+      // [{"id": "roga-ask-partial-noctx-tw-8", "verb": "ask", "target_sent": "Let's ask whether a certain thing is true or not."}, {"id": "roga-examine-partial-noctx-tw-8", "verb": "examine", "target_sent": "Examine whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tw-8", "verb": "inquire", "target_sent": "We have a message inquiring whether a certain thing happened."}, {"id": "roga-investigate-partial-noctx-tw-8", "verb": "investigate", "target_sent": "They have to investigate whether a certain thing was true."}, {"id": "roga-wonder-partial-noctx-tw-8", "verb": "wonder", "target_sent": "I'm wondering whether a certain thing will happen."}, {"id": "resp-discover-partial-noctx-tw-8", "verb": "discover", "target_sent": "There wasn't time for him to discover whether or not a certain thing was true."}, {"id": "resp-forget-partial-noctx-tw-8", "verb": "forget", "target_sent": "I'm sure I'd do that by forgetting whether or not a certain thing had happened."}, {"id": "resp-know-partial-noctx-tw-8", "verb": "know", "target_sent": "You do not know whether or not a certain thing is happening."}, {"id": "resp-realize-partial-noctx-tw-8", "verb": "realize", "target_sent": "You will realize whether or not a certain thing is true."}, {"id": "resp-remember-partial-noctx-tw-8", "verb": "remember", "target_sent": "I don't remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-tw-8", "verb": "believe", "target_sent": "They believe whether or not a certain thing is true."}, {"id": "anti-fear-partial-noctx-tw-8", "verb": "fear", "target_sent": "I feared whether a certain thing would be true."}, {"id": "anti-hope-partial-noctx-tw-8", "verb": "hope", "target_sent": "I hoped whether a certain thing would happen."}, {"id": "anti-imagine-partial-noctx-tw-8", "verb": "imagine", "target_sent": "I'm trying to imagine whether a certain thing is true."}, {"id": "anti-think-partial-noctx-tw-8", "verb": "think", "target_sent": "You should start to think whether a certain thing is true."}, {"id": "roga-ask-partial-noctx-tt-8", "verb": "ask", "target_sent": "I asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-8", "verb": "examine", "target_sent": "It's good that you examined that a certain thing might be true."}, {"id": "roga-inquire-partial-noctx-tt-8", "verb": "inquire", "target_sent": "I had him inquire that a certain thing happened and that another thing did."}, {"id": "roga-investigate-partial-noctx-tt-8", "verb": "investigate", "target_sent": "They may investigate that a certain thing is true."}, {"id": "roga-wonder-partial-noctx-tt-8", "verb": "wonder", "target_sent": "I wondered that a certain thing would happen."}, {"id": "resp-discover-partial-noctx-tt-8", "verb": "discover", "target_sent": "I discovered that a certain thing was true."}, {"id": "resp-forget-partial-noctx-tt-8", "verb": "forget", "target_sent": "Someone had forgotten that a certain thing is true."}, {"id": "resp-know-partial-noctx-tt-8", "verb": "know", "target_sent": "I let him know that a certain thing happened."}, {"id": "resp-realize-partial-noctx-tt-8", "verb": "realize", "target_sent": "You don't realize that a certain thing is true."}, {"id": "resp-remember-partial-noctx-tt-8", "verb": "remember", "target_sent": "It's important to remember that a certain thing will happen."}, {"id": "anti-believe-partial-noctx-tt-8", "verb": "believe", "target_sent": "We can believe that a certain thing happened."}, {"id": "anti-fear-partial-noctx-tt-8", "verb": "fear", "target_sent": "I fear that that a certain thing will happen."}, {"id": "anti-hope-partial-noctx-tt-8", "verb": "hope", "target_sent": "I hope that a certain thing would happen."}, {"id": "anti-imagine-partial-noctx-tt-8", "verb": "imagine", "target_sent": "I can imagine that a certain thing is true."}, {"id": "anti-think-partial-noctx-tt-8", "verb": "think", "target_sent": "I think that a certain thing happens."}, {"id": "roga-ask-partial-noctx-fw-9", "verb": "ask", "target_sent": "He asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-9", "verb": "examine", "target_sent": "You have examined whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-fw-9", "verb": "inquire", "target_sent": "I inquired whether a certain thing was true."}, {"id": "roga-investigate-partial-noctx-fw-9", "verb": "investigate", "target_sent": "They can investigate whether a certain thing has been happening."}, {"id": "roga-wonder-partial-noctx-fw-9", "verb": "wonder", "target_sent": "Many people wondered whether a certain thing was true."}, {"id": "resp-discover-partial-noctx-fw-9", "verb": "discover", "target_sent": "They discover whether a certain thing has been happening."}, {"id": "resp-forget-partial-noctx-fw-9", "verb": "forget", "target_sent": "Those people would forget whether a certain thing is true."}, {"id": "resp-know-partial-noctx-fw-9", "verb": "know", "target_sent": "It's nice to know whether a certain thing was true."}, {"id": "resp-realize-partial-noctx-fw-9", "verb": "realize", "target_sent": "You realize whether a certain thing happens."}, {"id": "resp-remember-partial-noctx-fw-9", "verb": "remember", "target_sent": "Remember whether a certain thing is true."}, {"id": "anti-believe-partial-noctx-fw-9", "verb": "believe", "target_sent": "You believe whether a certain thing happens."}, {"id": "anti-fear-partial-noctx-fw-9", "verb": "fear", "target_sent": "They feared whether a certain thing would happen."}, {"id": "anti-hope-partial-noctx-fw-9", "verb": "hope", "target_sent": "All you can do is hope whether a certain thing happens."}, {"id": "anti-imagine-partial-noctx-fw-9", "verb": "imagine", "target_sent": "I can imagine whether a certain thing could happen."}, {"id": "anti-think-partial-noctx-fw-9", "verb": "think", "target_sent": "I was brainwashed into thinking whether a certain thing would happen."}, {"id": "roga-ask-partial-noctx-ft-9", "verb": "ask", "target_sent": "It's one thing for them to ask that a certain thing happens."}, {"id": "roga-examine-partial-noctx-ft-9", "verb": "examine", "target_sent": "You need to examine that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-ft-9", "verb": "inquire", "target_sent": "A group did something to inquire that a certain thing would happen."}, {"id": "roga-investigate-partial-noctx-ft-9", "verb": "investigate", "target_sent": "We are talking about a plan to investigate that a certain thing happened or not."}, {"id": "roga-wonder-partial-noctx-ft-9", "verb": "wonder", "target_sent": "I wonder that certain things are true."}, {"id": "resp-discover-partial-noctx-ft-9", "verb": "discover", "target_sent": "You discover that a certain thing happens or not."}, {"id": "resp-forget-partial-noctx-ft-9", "verb": "forget", "target_sent": "You forget that a certain thing has already happened or not."}, {"id": "resp-know-partial-noctx-ft-9", "verb": "know", "target_sent": "You can imagine my devastation at not knowing that a certain thing would happen again."}, {"id": "resp-realize-partial-noctx-ft-9", "verb": "realize", "target_sent": "You realize that a certain thing is true or another thing was."}, {"id": "resp-remember-partial-noctx-ft-9", "verb": "remember", "target_sent": "I don't remember that a certain thing has happened or not."}, {"id": "anti-believe-partial-noctx-ft-9", "verb": "believe", "target_sent": "It's hard to believe that a certain thing is really true."}, {"id": "anti-fear-partial-noctx-ft-9", "verb": "fear", "target_sent": "I shouldn't have to fear that a certain thing happened or not."}, {"id": "anti-hope-partial-noctx-ft-9", "verb": "hope", "target_sent": "I'm hoping that a certain thing will happen."}, {"id": "anti-imagine-partial-noctx-ft-9", "verb": "imagine", "target_sent": "It's worth imagining that a certain thing could happen."}, {"id": "anti-think-partial-noctx-ft-9", "verb": "think", "target_sent": "She is going to think that a certain thing is happening."}]
+      // [{"id": "roga-ask-partial-noctx-tw-9", "verb": "ask", "target_sent": "It's one thing for them to ask whether a certain thing happens."}, {"id": "roga-examine-partial-noctx-tw-9", "verb": "examine", "target_sent": "You need to examine whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tw-9", "verb": "inquire", "target_sent": "A group did something to inquire whether a certain thing would happen."}, {"id": "roga-investigate-partial-noctx-tw-9", "verb": "investigate", "target_sent": "We are talking about a plan to investigate whether or not a certain thing happened."}, {"id": "roga-wonder-partial-noctx-tw-9", "verb": "wonder", "target_sent": "I wonder whether certain things are true."}, {"id": "resp-discover-partial-noctx-tw-9", "verb": "discover", "target_sent": "You discover whether or not a certain thing happens."}, {"id": "resp-forget-partial-noctx-tw-9", "verb": "forget", "target_sent": "You forget whether a certain thing has already happened or not."}, {"id": "resp-know-partial-noctx-tw-9", "verb": "know", "target_sent": "You can imagine my devastation at not knowing whether a certain thing would happen again."}, {"id": "resp-realize-partial-noctx-tw-9", "verb": "realize", "target_sent": "You realize whether or not a certain thing is true or another thing was."}, {"id": "resp-remember-partial-noctx-tw-9", "verb": "remember", "target_sent": "I don't remember whether a certain thing has happened or not."}, {"id": "anti-believe-partial-noctx-tw-9", "verb": "believe", "target_sent": "It's hard to believe whether a certain thing is really true."}, {"id": "anti-fear-partial-noctx-tw-9", "verb": "fear", "target_sent": "I shouldn't have to fear whether or not a certain thing happened."}, {"id": "anti-hope-partial-noctx-tw-9", "verb": "hope", "target_sent": "I'm hoping whether a certain thing will happen."}, {"id": "anti-imagine-partial-noctx-tw-9", "verb": "imagine", "target_sent": "It's worth imagining whether a certain thing could happen."}, {"id": "anti-think-partial-noctx-tw-9", "verb": "think", "target_sent": "She is going to think whether a certain thing is happening."}, {"id": "roga-ask-partial-noctx-tt-9", "verb": "ask", "target_sent": "He asked that a certain thing happened."}, {"id": "roga-examine-partial-noctx-tt-9", "verb": "examine", "target_sent": "You have examined that a certain thing is true."}, {"id": "roga-inquire-partial-noctx-tt-9", "verb": "inquire", "target_sent": "I inquired that a certain thing was true."}, {"id": "roga-investigate-partial-noctx-tt-9", "verb": "investigate", "target_sent": "They can investigate that a certain thing has been happening."}, {"id": "roga-wonder-partial-noctx-tt-9", "verb": "wonder", "target_sent": "Many people wondered that a certain thing was true."}, {"id": "resp-discover-partial-noctx-tt-9", "verb": "discover", "target_sent": "They discover that a certain thing has been happening."}, {"id": "resp-forget-partial-noctx-tt-9", "verb": "forget", "target_sent": "Those people would forget that a certain thing is true."}, {"id": "resp-know-partial-noctx-tt-9", "verb": "know", "target_sent": "It's nice to know that a certain thing was true."}, {"id": "resp-realize-partial-noctx-tt-9", "verb": "realize", "target_sent": "You realize that a certain thing happens."}, {"id": "resp-remember-partial-noctx-tt-9", "verb": "remember", "target_sent": "Remember that a certain thing is true."}, {"id": "anti-believe-partial-noctx-tt-9", "verb": "believe", "target_sent": "You believe that a certain thing happens."}, {"id": "anti-fear-partial-noctx-tt-9", "verb": "fear", "target_sent": "They feared that a certain thing would happen."}, {"id": "anti-hope-partial-noctx-tt-9", "verb": "hope", "target_sent": "All you can do is hope that a certain thing happens."}, {"id": "anti-imagine-partial-noctx-tt-9", "verb": "imagine", "target_sent": "I can imagine that a certain thing could happen."}, {"id": "anti-think-partial-noctx-tt-9", "verb": "think", "target_sent": "I was brainwashed into thinking that a certain thing would happen."}, {"id": "roga-ask-partial-noctx-fw-0", "verb": "ask", "target_sent": "I asked whether a certain thing happened."}, {"id": "roga-examine-partial-noctx-fw-0", "verb": "examine", "target_sent": "I've got to examine whether a certain thing is true."}, {"id": "roga-inquire-partial-noctx-fw-0", "verb": "inquire", "target_sent": "He inquired whether a certain thing is happening."}, {"id": "roga-investigate-partial-noctx-fw-0", "verb": "investigate", "target_sent": "It should be investigated whether a certain thing was true."}, {"id": "roga-wonder-partial-noctx-fw-0", "verb": "wonder", "target_sent": "I wonder whether a certain thing happened."}, {"id": "resp-discover-partial-noctx-fw-0", "verb": "discover", "target_sent": "She discovered whether a certain thing was happening."}, {"id": "resp-forget-partial-noctx-fw-0", "verb": "forget", "target_sent": "People are forgetting that whether a certain thing is true."}, {"id": "resp-know-partial-noctx-fw-0", "verb": "know", "target_sent": "They know whether a certain thing is true."}, {"id": "resp-realize-partial-noctx-fw-0", "verb": "realize", "target_sent": "I realized whether a certain thing happened."}, {"id": "resp-remember-partial-noctx-fw-0", "verb": "remember", "target_sent": "I remember whether a certain thing happened."}, {"id": "anti-believe-partial-noctx-fw-0", "verb": "believe", "target_sent": "I believe whether a certain thing is true."}, {"id": "anti-fear-partial-noctx-fw-0", "verb": "fear", "target_sent": "I fear whether a certain thing will happen."}, {"id": "anti-hope-partial-noctx-fw-0", "verb": "hope", "target_sent": "I hope whether a certain thing happens."}, {"id": "anti-imagine-partial-noctx-fw-0", "verb": "imagine", "target_sent": "I would imagine whether a certain thing would happen."}, {"id": "anti-think-partial-noctx-fw-0", "verb": "think", "target_sent": "I think whether a certain thing is true."}, {"id": "roga-ask-partial-noctx-ft-0", "verb": "ask", "target_sent": "That's like asking that a certain thing is true."}, {"id": "roga-examine-partial-noctx-ft-0", "verb": "examine", "target_sent": "We need to examine that a certain thing happens."}, {"id": "roga-inquire-partial-noctx-ft-0", "verb": "inquire", "target_sent": "I inquired that a certain thing had happened."}, {"id": "roga-investigate-partial-noctx-ft-0", "verb": "investigate", "target_sent": "You might want to investigate that a certain thing is true."}, {"id": "roga-wonder-partial-noctx-ft-0", "verb": "wonder", "target_sent": "I've wondered that a certain thing happened or another thing did."}, {"id": "resp-discover-partial-noctx-ft-0", "verb": "discover", "target_sent": "A group of people is trying to discover that a certain thing was true."}, {"id": "resp-forget-partial-noctx-ft-0", "verb": "forget", "target_sent": "I forget that a certain thing happened."}, {"id": "resp-know-partial-noctx-ft-0", "verb": "know", "target_sent": "I don't know that a certain thing is true or not."}, {"id": "resp-realize-partial-noctx-ft-0", "verb": "realize", "target_sent": "You need to realize that a certain thing is true or another thing is."}, {"id": "resp-remember-partial-noctx-ft-0", "verb": "remember", "target_sent": "I don't remember that certain things happened or not."}, {"id": "anti-believe-partial-noctx-ft-0", "verb": "believe", "target_sent": "Not doing that is not the same thing as believing that a certain thing is true or not."}, {"id": "anti-fear-partial-noctx-ft-0", "verb": "fear", "target_sent": "They had to fear that a certain thing would happen or not."}, {"id": "anti-hope-partial-noctx-ft-0", "verb": "hope", "target_sent": "I'm not sure to hope that a certain thing is true or not."}, {"id": "anti-imagine-partial-noctx-ft-0", "verb": "imagine", "target_sent": "You don't have to imagine that a certain thing is happening."}, {"id": "anti-think-partial-noctx-ft-0", "verb": "think", "target_sent": "When a topic is brought up, instead of thinking that a certain thing is true, people do something else."}]
+      ;      // json_items = jQuery.parseJSON(json_items);
+
+    }
+    const catch_trials = [
+    {"id": "catch-full-noctx-11",
+    "verb": "shatter", "target_sent": "Someone was shattering whether a certain thing happened."},
+    {"id": "catch-full-noctx-12", "verb": "tickle", 
+    "target_sent": "The group tickles that a certain thing happened."},
+    {"id": "catch-full-noctx-11", "verb": "tickle", 
+    "target_sent": "They were tickling about whether a certain thing happened."}, 
+    {"id": "catch-full-noctx-12", "verb": "shatter",
+     "target_sent": "He tries to shatter whether a certain thing happens."}, 
+     {"id": "catch-full-noctx-10", "verb": "tickle", 
+     "target_sent": "Someone might have tickled whether a certain thing happened."}];
+    // const catch_trials = jQuery.parseJSON(json_constant_items);
+
+    // const content_items = jQuery.parseJSON(json_items)//.slice(0, 60) //!!!!!!!!!!!
+    const content_items = json_items
+    // const catch_trials = json_items.slice(60, 65)
+    const shuffleArray = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    };
+    shuffleArray(catch_trials)
+
+    // Create an empty dictionary to store the bins
+    const bins = {};
+
+    // Iterate through the items and populate the bins accordingly
+    content_items.forEach(item => {
+        const key = item.verb;
+        if (bins[key]) {
+            bins[key].push(item);
+        } else {
+            bins[key] = [item];
+        }
+    });
+
+    // const sorted_items = customSort(content_items);
+
+    // Initialize an empty list to store the selected items
+    sorted_items = [];
+
+    // Get the keys of bins and shuffle them
+    const binKeys = Object.keys(bins);
+    shuffleArray(binKeys);
+
+    // Iterate through each bin key and select one item randomly from each until every bin is empty
+    let binsNotEmpty = true;
+    while (binsNotEmpty) {
+        binsNotEmpty = false;
+        for (const key of binKeys) {
+            if (bins[key].length > 0) {
+                const randomIndex = Math.floor(Math.random() * bins[key].length);
+                sorted_items.push(bins[key][randomIndex]);
+                bins[key].splice(randomIndex, 1);
+                binsNotEmpty = true;
+            }
+        }
+    }
+
+    // Iterate through each bin and select one item randomly from each until every bin is empty
+    // let binsNotEmpty = true;
+    // while (binsNotEmpty) {
+    //     binsNotEmpty = false;
+    //     shuffleArray(bins)
+    //     for (const key in bins) {
+    //         if (bins[key].length > 0) {
+    //             const randomIndex = Math.floor(Math.random() * bins[key].length);
+    //             sorted_items.push(bins[key][randomIndex]);
+    //             bins[key].splice(randomIndex, 1);
+    //             binsNotEmpty = true;
+    //         }
+    //     }
+    // }
+
+    // Output the selected items
+    // console.log(sorted_items);
+    // console.log('selected bins')
+    
+
+    // Function to sort items in the desired way
+    const customSort = (items) => {
+        const sortedItems = [];
+        const verbCounts = {};
+
+        // Count the occurrences of each value of "sand"
+        items.forEach(item => {
+            verbCounts[item.verb] = verbCounts[item.verb] ? verbCounts[item.verb] + 1 : 1;
+        });
+
+        // Sort the "sand" values by counts in descending order
+        const sortedVerbs = Object.keys(verbCounts).sort((a, b) => verbCounts[b] - verbCounts[a]);
+
+        // Reorder the items based on the sorted "sand" values
+        while (sortedItems.length < items.length) {
+            for (let i = 0; i < sortedVerbs.length; i++) {
+                const sand = sortedVerbs[i];
+                const index = items.findIndex(item => item.verb === sand && !sortedItems.includes(item));
+                if (index !== -1) {
+                    sortedItems.push(items[index]);
+                }
+            }
+        }
+
+        return sortedItems;
+    };
+    // sorted_items = customSort(sorted_items);
+
+
+
+    // 31 39 44 47 56
+    sorted_items.splice(32, 0, catch_trials[0]);
+    sorted_items.splice(40, 0, catch_trials[1]);
+    sorted_items.splice(44, 0, catch_trials[2]);
+    sorted_items.splice(56, 0, catch_trials[3]);
+    sorted_items.splice(61, 0, catch_trials[4]);
+
+    // // Sort the items using the custom sorting function
+    // // const sortedItems = customSort(content_items);
+
+    // // Output the sorted items
+    // console.log(sorted_items);
+
+
+    // console.log("WOOOAAAH");
+
+    // accbins = json_items.map(elem => elem['accbin'])
+    //                     .filter((value, index, elem) => elem.indexOf(value) === index)
+    //                     .sort((a, b) => b - a)
+    //                     .map(idx => json_items.filter(elem => elem['accbin'] === idx)
+    //                                           .sort((a, b) => a['freq'] - b['freq']));
+    // console.log(accbins)
+
+    // json_items = [accbins[0].pop(), accbins[accbins.length-1].pop()];
+    // console.log(json_items)
+
+    // accbins.map(bin => shuffle(bin)); // shuffle within bins
+    // shuffle(accbins); // shuffle the bins    
+
+    // binidx = 0;
+    // incomplete = true;
+  
+    // while (incomplete){
+    //   if (accbins[binidx].length > 0) {
+    //     json_items.push(accbins[binidx].pop());
+    //   } else {
+    //     binidx++;
+    //   }
+    //   incomplete = accbins.some(elem => elem.length > 0);  
+    // }
+
+    //console.log(json_items);
+    num_sentences = sorted_items.length;
+
+    var questions_html = "";
+
+    for (var i=0; i<num_sentences; i++){
+      var itemid = sorted_items[i]["id"];
+      var sentence = sorted_items[i]["target_sent"];
+      // var sentence_length = json_items[i]["sentence_tokenized"].length;
+      // var THRESHOLD_max_edit_distance = Math.ceil(THRESHOLD_max_edit_distance_ratio * sentence_length);
+
+      questions_html += `<p><span class="sentence">` + (i+1).toString() + `. ` + sentence + `</span></p>`;
+      questions_html += `<p><span class="question">` + question_naturalness + `</span>`;
+      questions_html += `<div class="form-control-group"><label>Extremely <u>un</u>natural</label>  <input type="range" min="1" max="100" class="styled-slider invisible-handle" name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `"/> <label>Perfectly natural</label></div>`;
+      
+      
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="5" />Perfectly natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="4" />Fairly natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="3" />Somewhat <u>un</u>natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="2" />Very <u>un</u>natural</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="naturalness_` + itemid.toString() + `" id="naturalness_` + itemid.toString() + `" type="radio" value="1" />Extremely <u>un</u>natural</label></div>`;
+      // questions_html += `<p><span class="question">` + question_difficulty + `</span></p>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="5" />Extremely easy</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="4" />Fairly easy</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="3" />Somewhat difficult</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="2" />Very difficult</label></div>`;
+      // questions_html += `<div class="radio"><label><input name="difficulty_` + itemid.toString() + `" id="difficulty_` + itemid.toString() + `" type="radio" value="1" />Extremely difficult</label></div>`;
+      // questions_html += `<p><span class="question">Edited sentence:</span></p>`;
+      // questions_html += `<textarea class="form-control" name="edited_sentence_` + itemid.toString() + `" id="edited_sentence_` + itemid.toString() + `" rows="1" style="font-size:1em;">` + sentence + `</textarea><br />`;
+      // questions_html += `<input class="btn btn-info btn-sm" type="button" value="Check your answer" id="valbtn_`+ itemid.toString() + `" onclick="validate_one(` + itemid.toString() +`)" />`;
+      // questions_html += `<span id="val-result_` + itemid.toString() + `"></span>`;
+      questions_html += `<hr />`;
+    }
+
+    var questions = document.getElementById("questions");
+    questions.innerHTML = questions_html;
+
+    // JavaScript to handle range slider visibility
+    const rangeSliders = document.querySelectorAll('.styled-slider');
+
+    // Add event listeners for mouse and touch events to each slider
+    rangeSliders.forEach(function(slider) {
+        slider.addEventListener('mousedown', handleSliderInteraction);
+        slider.addEventListener('touchstart', handleSliderInteraction);
+        click_listener_record.add(slider.id)
+    });
+
+    function handleSliderInteraction() {
+        // Show the handle when the user interacts with the slider
+        this.classList.remove('invisible-handle');
+
+        // Remove event listeners to prevent unnecessary calls
+        this.removeEventListener('mousedown', handleSliderInteraction);
+        this.removeEventListener('touchstart', handleSliderInteraction);
+        click_listener_record.delete(this.id)
+    }
+  }
+
+  function toggle() {
+
+    var ele = document.getElementById("examples");
+    var text = document.getElementById("displaytext");
+
+    if (ele.style.display != "none") {
+      ele.style.display = "none";
+      text.innerHTML = "(show)";
+    } else {
+      ele.style.display = "block";
+      text.innerHTML = "(hide)";
+    }
+  }
+
+  /**
+   * Randomly shuffle an array
+   * https://stackoverflow.com/a/2450976/1293256
+   * @param  {Array} array The array to shuffle
+   * @return {String}      The first item in the shuffled array
+   */
+  function shuffle(array) {
+
+  	          var currentIndex = array.length;
+	          var temporaryValue, randomIndex;
+
+	          // While there remain elements to shuffle...
+	          while (0 !== currentIndex) {
+		    // Pick a remaining element...
+		    randomIndex = Math.floor(Math.random() * currentIndex);
+		    currentIndex -= 1;
+
+		    // And swap it with the current element.
+		    temporaryValue = array[currentIndex];
+		    array[currentIndex] = array[randomIndex];
+		    array[randomIndex] = temporaryValue;
+	          }
+
+	          return array;
+                };
+
+
+  function levenshtein_distance(a, b) {
+    // computing edit distance between two arrays
+    // usage: e.g., var res = levenshtein_distance("This is not a sentence.".split(" "), "This is a sentence.".split(" "));
+    // edit_distance = res[0];
+    // edits = res[1];
+
+    const ins_cost = 1; // insertion cost
+    const del_cost = 1; // deletion cost
+    const sub_cost = 1; // substitution cost
+
+    console.log(a);
+    console.log(b);
+    a.unshift("#");
+    b.unshift("#");
+
+    var distanceMatrix = new Array(b.length).fill().map(() => Array(a.length).fill(0));
+    //console.log(distanceMatrix);
+
+    var edMatrix = new Array(b.length).fill().map(() => Array(a.length).fill(0));
+
+    //initialize Matrices
+    distanceMatrix[0][0] = 0;
+    edMatrix[0][0] = "#";
+
+    for (var i = 1; i < a.length; i++) {
+      distanceMatrix[0][i] = i;
+      edMatrix[0][i] = "I";
+    }
+    for (var j = 1; j < b.length; j++) {
+      distanceMatrix[j][0] = j;
+      edMatrix[j][0] = "D";
+    }
+
+    for (var j = 1; j < a.length; j++) {
+      for (var i = 1; i < b.length; i++) {
+
+        var cost1 = distanceMatrix[i][j-1] + ins_cost;
+        var cost2 = distanceMatrix[i-1][j] + del_cost;
+
+        var cost3 = null;
+        if (a[j] == b[i]) {
+          cost3 = distanceMatrix[i-1][j-1];
+        } else {
+          cost3 = distanceMatrix[i-1][j-1] + sub_cost;
+        }
+
+        if (Math.min(cost1, cost2, cost3) == cost3) {
+          distanceMatrix[i][j] = cost3;
+          edMatrix[i][j] = "R";
+        } else if (Math.min(cost1, cost2, cost3) == cost2) {
+          distanceMatrix[i][j] = cost2;
+          edMatrix[i][j] = "D";
+        } else {
+          distanceMatrix[i][j] = cost1;
+          edMatrix[i][j] = "I";
+        }
+      }
+    }
+    //console.log(distanceMatrix);
+
+    // get edits
+    j = a.length-1;
+    i = b.length-1;
+    var prev_edit = edMatrix[i][j];
+    var edits = [prev_edit];
+    while (prev_edit != "#") {
+      if (prev_edit == "I") {
+        prev_edit = edMatrix[i][j-1];
+        j = j-1 ;
+        edits.unshift("I");
+      } else if (prev_edit == "D") {
+        prev_edit = edMatrix[i-1][j];
+        i = i-1;
+        edits.unshift("D");
+      } else {
+
+        if (distanceMatrix[i][j] == distanceMatrix[i-1][j-1]) {
+          edits.unshift("_");
+        } else {
+          edits.unshift("R");
+        }
+        prev_edit = edMatrix[i-1][j-1];
+        j = j-1;
+        i = i-1;
+      }
+    }
+
+    var ed = parseInt(distanceMatrix[b.length-1][a.length-1]);
+    edits.pop();
+    return [ed, edits]
+  }
+
+  function validation_failed(alert_msg){
+    var warnings = document.getElementById("warnings");
+    alert(alert_msg);
+    warnings.innerHTML = '<span style="color:red;">' + alert_msg + '</span>';
+  }
+
+  function validate_one(idx){
+    // console.log("validate_one: " + idx);
+
+    var targetID = "naturalness_" + idx;
+
+    if (click_listener_record.has(targetID)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  function validate() {
+    console.log("validate");
+
+    if(document.getElementById("language").value == ''){
+        var alert_msg = "'Native language' field has been left blank. Please fill this field in (near the top of the page) to proceed. ";
+        validation_failed(alert_msg);
+        return false;
+    }
+    if(document.getElementById("otherlanguage").value == ''){
+        var alert_msg = "'Other languages' field has been left blank. Please fill this field in (near the top of the page) to proceed. ";
+        validation_failed(alert_msg);
+        return false;
+    }
+
+    // validate for each sentence (edit distance).
+    for (var i=0; i<num_sentences; i++){
+      var itemid = sorted_items[i]["itemid"];
+      var validation_i =  validate_one(itemid.toString());
+      if (!validation_i){
+        var alert_msg = "Question #" + (i+1).toString() + ' has been left blank. Please answer all questions to proceed. ' + instructions_edit_distance_html;
+        validation_failed(alert_msg);
+        return false;
+      }
+    }
+    return true;
+  }
+
+window.onload = init;
+
+// // Get all sliders
+// var sliders = document.querySelectorAll(".styled-slider");
+
+// // Disable scroll wheel for sliders
+// sliders.forEach(function(slider) {
+//     slider.addEventListener('wheel', function(event) {
+//         // Prevent the default scroll behavior for the slider
+//         event.preventDefault();
+
+//         // Scroll the page instead (adjust the value as needed)
+//         window.scrollBy(0, event.deltaY);
+//     });
+// });
+
+// Add a document-level event listener for the wheel event
+  // document.addEventListener('wheel', function(event) {
+  //           // Check if the target of the event is an input element with type "range"
+  //           if (event.target.tagName.toLowerCase() === 'input' && event.target.type === 'range') {
+  //               // Prevent default behavior for the wheel event on range inputs
+  //               event.preventDefault();
+  //           }
+  //       });
+</script>
+</head>
+
+<body>
+<noscript>
+  <h1 align="center" style="color:white; background-color: crimson">In this HIT, you must enable JavaScript. <br> This warning appears only when JavaScript is disabled. <br> (Please check https://enablejavascript.co/) <br/></h1>
+</noscript>
+
+
+<form name='mturk_form' method='post' id='mturk_form' action='/mturk/externalSubmit' onsubmit="return validate()">
+  <input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+  <div>&nbsp;</div>
+
+  <div class="container">
+    <!-- Title of the HIT -->
+    <h1 class="important">How natural are these English sentences?</h1>
+
+    <!-- <p style="color:#FF0000";>
+      <span class="important">Content warning:</span> You will encounter some sentences that you may find uncomfortable. Some sentences may contain swearing, or allude to sensitive topics such as sex, violence, abuse, racism, war, religion, or politics.
+      Your participation is entirely voluntary, and you are under no obligation to continue.
+    </p>
+    <div>&nbsp;</div> -->
+
+    <h3>Instructions</h3>
+
+    <p>
+      You will be asked to rate the naturalness of 65 different English sentences from <i>extremely <b>un</b>natural</i>
+      to <i>perfectly natural</i>. You will answer each question by selecting a point 
+      on a sliding scale. Please answer as precisely as possible. 
+    </p>
+
+    <p>
+      Some sentences will have only small differences, or contain unusual circumstances. Please read each sentence <i>carefully.</i> When assessing each sentence,
+      please consider how each sentence would sound...
+    </p>
+
+    <ol>
+      <li>
+        ...spoken <span class="important">exactly as written.</span>
+      </li>
+      <li>
+        ...spoken by a <span class="important">native and fluent speaker of standard American English.</span>
+      </li>
+    </ol>
+
+    <!-- <p>
+      Some sentences may be purposefully vague. That is perfectly okay! Simply do your best to understand the task and provide your responses based on the information provided.
+    </p> -->
+
+    <p>
+      A few of the questions in this task will contain sentences that sound obviously extremely unnatural or perfectly natural.
+      These are questions we already know the answers to. If you
+      are paying attention, you are certain to get these questions right. <i>If you answer a majority of these such questions wrong, then you risk
+      being rejected from the HIT.</i>
+    </p>
+
+    <h3>Examples <a href="javascript:toggle();" id="displaytext" style="font-size: 80%;">(hide)</a></h3>
+
+    <!-- examples -->
+    <div class="container" id="examples">
+      <table class="table table-condensed">
+        <thead>
+        <tr>
+          <td>&nbsp;</td>
+          <td>Sentence</td>
+          <td>Notes</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Example #1</td>
+          <td>Someone yelled a certain thing.</td>
+          <td>Perfectly natural and easy to interpret.</td>
+        </tr>
+        </tbody>
+        <tbody>
+        <tr>
+          <td>Example #2</td>
+          <td>She caught him which a certain thing happened.</td>
+          <td>Extremely unnatural and difficult to interpret.</td>
+        </tr>
+        </tbody>
+        <tbody>
+        <tr>
+          <td>Example #3</td>
+          <td>The group bribed a certain thing to him.</td>
+          <td>Very unnatural; fairly easy to interpret, but still very unnatural.</td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+<p>This research is being carried out by Dr. Aaron White at the University of Rochester. You can read more about the study in a PDF document <a href="https://factslab.io/information_sheet_021523.pdf">here</a>.</p>
+
+
+
+    <hr />
+
+    <table width=600>
+    
+      <tr>
+        <td><b>Native Language:</b></td><td><textarea class="form-control" name="language" id="language" rows="1" style="font-size:1em;"></textarea></td>
+      </tr>
+    
+      <tr>
+        <td><b>Do you speak any other languages? (please list, or write 'no'):</b></td><td><textarea class="form-control" name="otherlanguage" id="otherlanguage" onclick="return checkform()" rows="1" style="font-size:1em;"></textarea></td>
+      </tr>
+    
+    </table>
+    <div>&nbsp;</div>
+
+    <!-- Questions -->
+    <h3>Questions</h3>
+
+    <div class="panel-body" style="font-size:1em;">
+      <p id="questions"></p>
+    </div>
+    <hr/>
+
+    <p align="center">
+    <div align="center" id="warnings" style="color:red"></div>
+    </p>
+
+    <div>
+      <p>Comments and feedback
+        (Please leave a comment if you have any questions, suggestions, etc.)</p>
+      <span><textarea class="form-control" cols="120" name="feedback" rows="5"></textarea></span>
+      <br/>
+    </div>
+
+    
+
+    <input type='hidden' value="${hid}" name='hid' id='hid'/>
+
+    <div>
+      <p align="center"><u>By clicking Submit, you agree that you have read the instructions and examples.</u></p>
+      <p align="center">
+        <input type='submit' id='submitButton' value='Submit'/>
+      </p>
+    </div>
+
+  </div>
+
+</form>
+<script language='Javascript'>turkSetAssignmentID();</script>
+
+</body>
